@@ -10,8 +10,8 @@ int main(int argc,char** argv) {
         const auto config=options(argc,argv);
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
         const OverlayDiagnostics diagnostics;
-        const auto frames=runOverlay(config);
-        diagnostics.write(config.report,frames);
+        const auto result=runOverlay(config);
+        diagnostics.write(config.report,result);
         return 0;
     } catch(const std::exception& e) {
         std::cerr<<"Tela: "<<e.what()<<'\n'; return 1;

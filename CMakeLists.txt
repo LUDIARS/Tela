@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 project(Tela VERSION 0.1.0 LANGUAGES CXX)
 add_library(tela_core src/domain/composition/document.cpp src/domain/composition/layout.cpp
   src/application/runtime.cpp src/domain/input/input_regions.cpp src/domain/input/gesture_ownership.cpp
-  src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp)
+  src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp
+  src/domain/overlay/presentation_status.cpp)
 add_library(Tela::Core ALIAS tela_core)
 include(GNUInstallDirs)
 target_include_directories(tela_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -48,6 +49,12 @@ add_executable(tela_declaration examples/declaration.cpp)
 target_link_libraries(tela_declaration PRIVATE Tela::Core)
 include(CTest)
 if(BUILD_TESTING)
+  add_executable(tela_presentation_tests tests/presentation_test.cpp)
+  target_link_libraries(tela_presentation_tests PRIVATE Tela::Core)
+  add_test(NAME tela_presentation_reasons COMMAND tela_presentation_tests)
+  add_executable(tela_reconnect_tests tests/reconnect_test.cpp)
+  target_link_libraries(tela_reconnect_tests PRIVATE Tela::Core)
+  add_test(NAME tela_reconnect_lifetime COMMAND tela_reconnect_tests)
   add_executable(tela_core_tests tests/document_test.cpp)
   target_link_libraries(tela_core_tests PRIVATE Tela::Core)
   add_test(NAME tela_core_contract COMMAND tela_core_tests)

@@ -17,7 +17,7 @@ using Clock=std::chrono::steady_clock;
 class OverlaySession {
 public:
     explicit OverlaySession(const Options& config);
-    std::uint64_t run();
+    OverlayRunReport run();
 private:
     void save(tela::Transition value);
     void add(const tela::Anchor& anchor);
@@ -42,6 +42,7 @@ private:
     int clicks_{};
     std::uint64_t connection_{}, nextId_{};
     bool rebuild_{true};
+    tela::PresentationDiagnostics presentation_;
     Clock::time_point started_{Clock::now()};
 };
 OverlaySession::OverlaySession(const Options& config) : config_(config),renderer_(config.font),bridge_(runtime_) {
@@ -74,7 +75,8 @@ void OverlaySession::startProbe() {
 }
 bool OverlaySession::pumpMessages() {
     HANDLE wake=pipe_?reinterpret_cast<HANDLE>(pipe_->wake_handle()):nullptr;
-    MsgWaitForMultipleObjects(wake?1:0,wake?&wake:nullptr,FALSE,100,QS_ALLINPUT);
+    // Pipe delivery and native messages wake immediately; only the probe polls geometry.
+    MsgWaitForMultipleObjects(wake?1:0,wake?&wake:nullptr,FALSE,config_.probe?100:1000,QS_ALLINPUT);
     bool running=true; MSG message{};
     while(PeekMessageW(&message,nullptr,0,0,PM_REMOVE)) {
         if(message.message==WM_QUIT) running=false;
@@ -90,6 +92,7 @@ bool OverlaySession::updateProbe() {
     synchronizeProbe(runtime_,target_); return IsWindow(target_)!=FALSE;
 }
 void OverlaySession::disconnect() {
+    if(overlay_) presentation_.append(overlay_->diagnostics());
     bridge_.disconnect(); overlay_.reset(); connection_=0;
 }
 void OverlaySession::accept(const tela::BridgeMessage& message) {
@@ -117,13 +120,18 @@ void OverlaySession::receive() {
     if(!pipe_) return;
     for(const auto& event:pipe_->drain()) receive(event);
 }
-std::uint64_t OverlaySession::run() {
+OverlayRunReport OverlaySession::run() {
     while(pumpMessages()) {
-        if(expired() || !updateProbe()) break;
+        if(expired()) break;
+        if(!updateProbe()) {
+            if(overlay_) overlay_->synchronize(); // record target loss before teardown
+            break;
+        }
         receive(); rebuildDocument();
         if(overlay_) overlay_->synchronize();
     }
-    return runtime_.frames();
+    if(overlay_) presentation_.append(overlay_->diagnostics());
+    return {runtime_.frames(),presentation_};
 }
 }
-std::uint64_t runOverlay(const Options& options) { return OverlaySession(options).run(); }
+OverlayRunReport runOverlay(const Options& options) { return OverlaySession(options).run(); }

@@ -54,3 +54,27 @@ Excubitor, and use Tools/Tela/Scene Bridge. Select a Scene object, add/edit/save
 transition, move the Scene camera, change selection, hide the dock tab, disconnect,
 reconnect and close Unity. Repeat idle and resource measurements during actual
 Unity use. A successful library build is not evidence that these UI checks passed.
+
+## Presentation diagnostics (report version 2)
+
+The report records each synchronization decision: presented, unchanged,
+viewport_hidden, empty_viewport, target_lost, target_hidden, target_minimized,
+foreground_unavailable, or foreign_foreground. `not_observed` means no decision
+was sampled, not that a target was lost. Counts are observations, not elapsed
+time. The last observation identifies target/foreground process IDs; the report
+does not capture window titles or Scene object contents. Zero frames never prove
+successful composition. Gates are unchanged by diagnostics. The target probe
+still polls at 100 ms; IPC wakes the normal overlay immediately, with a one-second
+fallback for native visibility observation. Heartbeats do not submit frames.
+
+The Unity sample now binds only from the selected, focused Scene callback. While
+Inspector, a different Scene, or a different app has focus, it hides conservatively.
+Focus restoration requests one repaint; a changed native root requires reconnect.
+Verify these cases with both docked and floating Scene and bridge windows.
+
+`scripts/verify-bridge-contracts.ps1 -EditorData <Unity 6 Data>` compiles and runs
+pure .NET contracts without starting the Editor, overlay, or a listening server.
+It covers host-binding eligibility, hidden notification suppression, heartbeat
+cadence, restore, and repeated disposal while connecting. CTest also checks
+presentation reasons and repeated bridge-generation/gesture cancellation.
+These checks do not establish native GDI/capture or GPU lifetime correctness.

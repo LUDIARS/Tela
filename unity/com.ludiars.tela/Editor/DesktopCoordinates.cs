@@ -12,11 +12,12 @@ namespace Tela.Editor
     {
         [StructLayout(LayoutKind.Sequential)] private struct Point { public int X, Y; }
         [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")] private static extern IntPtr GetAncestor(IntPtr window, uint flags);
         [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr window, out uint pid);
         [DllImport("user32.dll")] private static extern bool LogicalToPhysicalPointForPerMonitorDPI(IntPtr window, ref Point point);
         internal static IntPtr ForegroundHost()
         {
-            var window = GetForegroundWindow(); GetWindowThreadProcessId(window, out uint pid);
+            var window = GetAncestor(GetForegroundWindow(), 2); GetWindowThreadProcessId(window, out uint pid);
             return pid == (uint)Process.GetCurrentProcess().Id ? window : IntPtr.Zero;
         }
         internal static Vector2Int Physical(IntPtr host, Vector2 guiPosition)

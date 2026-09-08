@@ -2,6 +2,6 @@
   "name":"host-bridge",
   "description":"外部ホストの座標・選択・観測入力をTelaの値へ翻訳する支援コンテキスト。認証・世代・順序・容量・切断契約を持ち、Unityをコアへ流入させない。",
   "presetRules":[],"templateRules":[],
-  "membership":[{"pathPattern":"(^|/)(src/application/bridge_session\\.cpp$|src/infrastructure/bridge/|src/infrastructure/windows/(windows_pipe|pipe_security)\\.(cpp|hpp)$|include/tela/(bridge|host_contract|windows_pipe)\\.hpp$|unity/|tests/bridge_test\\.cpp$)"}],
+  "membership":[{"pathPattern":"(^|/)(src/application/bridge_session\\.cpp$|src/infrastructure/bridge/|src/infrastructure/windows/(windows_pipe|pipe_security)\\.(cpp|hpp)$|include/tela/(bridge|host_contract|windows_pipe)\\.hpp$|unity/|tests/unity/|tests/(bridge|reconnect)_test\\.cpp$)"}],
   "specRefs":["spec/bridge-protocol.md","spec/architecture/ddd.md"]
 }

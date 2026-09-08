@@ -1,5 +1,6 @@
 #pragma once
 #include <tela/pictor_surface.hpp>
+#include <tela/presentation_status.hpp>
 #include <memory>
 
 namespace tela {
@@ -13,6 +14,7 @@ public:
     void synchronize(); // geometry/visibility, then present only when dirty
     void hide();
     std::uintptr_t native_window() const noexcept;
+    const PresentationDiagnostics& diagnostics() const noexcept;
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

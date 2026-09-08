@@ -48,6 +48,17 @@ Scope streams to a connection generation so reconnects cannot revive old gesture
 Connection loss cancels captures and hides the overlay. Use authenticated local IPC,
 bounded queues and coalesce moves without dropping down/up/cancel ordering.
 
+The Unity sample defers its initial hello until the selected Scene's GUI callback
+runs with that Scene focused and a Unity-owned foreground root window. Clicking
+Connect in a floating bridge window is not sufficient evidence of Scene ownership.
+A changed root requires explicit reconnect (new transport generation). The sample
+conservatively hides when the selected Scene loses focus, including Inspector or
+another Unity tab, and repaints once when focus returns. It does not periodically
+force Scene repaints to infer visibility. A bounded one-second heartbeat remains
+necessary for the native three-second transport timeout; suspension does not mean
+all Editor callbacks or transport maintenance stop. The pipe worker owns its wait
+event and disposes it in finally, including eventual exit after a bounded join.
+
 The C++ structs are in-process value types, not a packed ABI or wire format.
 Serialization, current-user authentication, bounds checks and version rejection
 are implemented by the optional Windows pipe adapter; see `bridge-protocol.md`.

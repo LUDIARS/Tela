@@ -4,6 +4,7 @@
 #include <tela/input_regions.hpp>
 #include <windowsx.h>
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -16,6 +17,7 @@ struct WindowsOverlay::Impl {
     std::uint64_t sequence{}, gesture{};
     std::exception_ptr error;
     bool visible{};
+    PresentationDiagnostics diagnostics;
     Impl(Runtime& r, PictorSurface& p, HWND t) : runtime(r), renderer(p), target(t) {
         if (!IsWindow(target)) throw std::invalid_argument("Tela target HWND does not exist");
         WNDCLASSEXW c{sizeof(c)}; c.lpfnWndProc = procedure; c.hInstance = GetModuleHandleW(nullptr);
@@ -66,17 +68,33 @@ struct WindowsOverlay::Impl {
         }
         return DefWindowProcW(w,m,wp,lp);
     }
-    void synchronize() {
+    // Returns the observation to present under, or nothing when suppressed.
+    std::optional<PresentationObservation> preparePresentation() {
         if (error) std::rethrow_exception(error);
         const auto& v=runtime.viewport();
         DWORD target_pid{}, foreground_pid{};
         GetWindowThreadProcessId(target,&target_pid);
         GetWindowThreadProcessId(GetForegroundWindow(),&foreground_pid);
-        const bool show=v.visible && v.width>0 && v.height>0 && IsWindow(target) &&
-            IsWindowVisible(target) && !IsIconic(target) && target_pid==foreground_pid;
-        if (!show) { if (visible) hide(); return; }
+        // A newly shown overlay has no frame yet, so treat becoming visible as dirty.
+        const PresentationObservation observation{v.visible,v.width>0&&v.height>0,
+            IsWindow(target)!=FALSE,IsWindowVisible(target)!=FALSE,IsIconic(target)!=FALSE,
+            !visible||runtime.needs_frame(),
+            static_cast<std::uint32_t>(target_pid),static_cast<std::uint32_t>(foreground_pid)};
+        const auto reason=presentation_reason(observation);
+        if(reason!=PresentationReason::presented) {
+            diagnostics.record(reason,observation);
+            // hide() also cancels; an already-hidden overlay holds no capture, so
+            // cancelling again would repeatedly discard gestures owned elsewhere.
+            if(reason!=PresentationReason::unchanged && visible) hide();
+            return std::nullopt;
+        }
         if (!visible) runtime.invalidate();
-        if (!runtime.needs_frame()) return;
+        return observation;
+    }
+    void synchronize() {
+        const auto observation=preparePresentation();
+        if(!observation) return;
+        const auto& v=runtime.viewport();
         const auto surface=renderer.render(runtime);
         auto visualSurface=surface;
         std::unordered_map<std::string,bool> keep;
@@ -122,6 +140,7 @@ struct WindowsOverlay::Impl {
         windows::present(visual,visualSurface,v.desktop_x,v.desktop_y);
         SetWindowPos(visual,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_SHOWWINDOW);
         runtime.frame_presented(); visible=true;
+        diagnostics.record(PresentationReason::presented,*observation);
     }
 };
 WindowsOverlay::WindowsOverlay(Runtime& r,PictorSurface& p,std::uintptr_t target)
@@ -130,4 +149,5 @@ WindowsOverlay::~WindowsOverlay()=default;
 void WindowsOverlay::synchronize() { impl_->synchronize(); }
 void WindowsOverlay::hide() { impl_->hide(); }
 std::uintptr_t WindowsOverlay::native_window() const noexcept { return reinterpret_cast<std::uintptr_t>(impl_->visual); }
+const PresentationDiagnostics& WindowsOverlay::diagnostics() const noexcept { return impl_->diagnostics; }
 }
