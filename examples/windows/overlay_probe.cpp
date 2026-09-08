@@ -1,4 +1,7 @@
 #include "overlay_probe.hpp"
+#include "probe_controls.hpp"
+#include <tela/callout.hpp>
+// @spec Overlay drawing
 #include <stdexcept>
 // @spec Overlay lifecycle
 void synchronizeProbe(tela::Runtime& runtime,HWND target){
@@ -14,11 +17,12 @@ void synchronizeProbe(tela::Runtime& runtime,HWND target){
 }
 tela::Document probeDocument(int& clicks,tela::Runtime& runtime){
     tela::Document d;
-    d.panel("probe",[&]{
-        d.text("title","Tela / Pictor transparent overlay");
-        d.text("passthrough","Click this text: the host receives input");
-        d.button("exclusive","Tela button: "+std::to_string(clicks),[&clicks,&runtime]{++clicks;runtime.document(probeDocument(clicks,runtime));});
-        d.text("hint","Move / minimize the host; press Esc to close");
-    },{.width=420,.positioned=true,.x=30,.y=30});
+    declare_probe_controls(d,clicks);
+    const auto& view=runtime.viewport();
+    const float width=view.width/view.dpi_scale,height=view.height/view.dpi_scale;
+    tela::Callout name;
+    name.anchor={width*.7f,height*.65f};name.visible=view.visible;
+    name.leader.dash=6;name.leader.gap=4;
+    tela::callout(d,"probe.target-name","Tracked target",name,{0,0,width,height});
     return d;
 }

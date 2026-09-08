@@ -13,7 +13,7 @@ void Runtime::layout() {
 void Runtime::document(Document document) {
     const auto& before=document_.elements();const auto& after=document.elements();
     const bool same=before.size()==after.size()&&std::equal(before.begin(),before.end(),after.begin(),[](const auto& a,const auto& b){
-        return a.id==b.id&&a.parent==b.parent&&a.kind==b.kind&&a.label==b.label&&a.input==b.input&&a.layout==b.layout;
+        return a.id==b.id&&a.parent==b.parent&&a.kind==b.kind&&a.label==b.label&&a.input==b.input&&a.layout==b.layout&&a.drawing==b.drawing;
     });
     if(same){
         document_=std::move(document);

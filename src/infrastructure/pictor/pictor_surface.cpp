@@ -1,5 +1,7 @@
 // @spec SPEC-TL-OVERLAY
 #include <tela/pictor_surface.hpp>
+#include <tela/drawing_raster.hpp>
+#include "../raster/pixel_blend.hpp"
 #include <pictor/text/text_image_renderer.h>
 #include <cmath>
 #include <stdexcept>
@@ -17,13 +19,7 @@ struct PictorSurface::Impl {
     }
 };
 namespace {
-void blend(unsigned char* dst, unsigned char b, unsigned char g, unsigned char r, unsigned char a) {
-    const unsigned inv = 255-a;
-    dst[0] = static_cast<unsigned char>(std::min(255u,b+(dst[0]*inv+127)/255));
-    dst[1] = static_cast<unsigned char>(std::min(255u,g+(dst[1]*inv+127)/255));
-    dst[2] = static_cast<unsigned char>(std::min(255u,r+(dst[2]*inv+127)/255));
-    dst[3] = static_cast<unsigned char>(std::min(255u,a+(dst[3]*inv+127)/255));
-}
+using raster::blend;
 Rect pixels(Rect r, float scale) { return {r.x*scale,r.y*scale,r.width*scale,r.height*scale}; }
 void rectangle(PixelSurface& out, Rect rect, Color c) {
     const int left = std::max(0,static_cast<int>(std::floor(rect.x)));
@@ -45,6 +41,8 @@ PixelSurface PictorSurface::render(const Runtime& runtime) {
         const auto& e = placed.element;
         Rect clip = pixels(placed.clip,view.dpi_scale);
         if (clip.width <= 0 || clip.height <= 0) continue;
+        if(e.kind==ElementKind::canvas)
+            paint_drawing(out,e.drawing,{placed.bounds.x,placed.bounds.y},view.dpi_scale,clip);
         if (e.kind == ElementKind::panel) rectangle(out,clip,theme.panel);
         if (e.kind == ElementKind::button) {
             auto state = runtime.state(e.id);

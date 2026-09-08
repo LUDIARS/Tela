@@ -47,6 +47,10 @@ void Document::panel(const std::string& id, const std::function<void()>& childre
 void Document::text(const std::string& id, const std::string& value, Layout layout, InputPolicy input) {
     append(id, ElementKind::text, value, input, layout);
 }
+void Document::canvas(const std::string& id, Drawing drawing, Layout layout, InputPolicy input) {
+    append(id,ElementKind::canvas,{},input,layout);
+    elements_.back().drawing=std::move(drawing);
+}
 void Document::button(const std::string& id, const std::string& label,
                       std::function<void()> action, Layout layout, InputPolicy input) {
     append(id, ElementKind::button, label, input, layout, std::move(action));

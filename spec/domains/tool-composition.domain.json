@@ -1,7 +1,20 @@
 {
   "name": "tool-composition",
   "description": "ツール作者がホストに依存せず表示と操作を構成する。安定ID、宣言の原子性、レイアウト、テーマ、状態維持を所有する。個々のUIパーツを独立ドメインにはしない。",
-  "presetRules": [], "templateRules": [],
-  "membership": [{"pathPattern":"(^|/)(src/domain/composition/|src/application/runtime\\.cpp$|include/tela/(document|geometry|layout|runtime)\\.hpp$|tests/(document|runtime)_test\\.cpp$|examples/declaration\\.cpp$)"}],
-  "specRefs": ["spec/ux/tool-composition.md", "spec/contracts.md", "spec/architecture/ddd.md"]
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)(src/domain/composition/|src/application/runtime\\.cpp$|include/tela/(document|geometry|layout|runtime)\\.hpp$|tests/(document|runtime)_test\\.cpp$|examples/declaration\\.cpp$)"
+    },
+    {
+      "pathPattern": "(^|/)(include/tela/(drawing|callout)\\.hpp$|tests/(drawing|callout)_test\\.cpp$|examples/overlay_drawing\\.cpp$)"
+    }
+  ],
+  "specRefs": [
+    "spec/ux/tool-composition.md",
+    "spec/contracts.md",
+    "spec/architecture/ddd.md",
+    "spec/feature/overlay-drawing.md"
+  ]
 }

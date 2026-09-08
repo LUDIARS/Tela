@@ -1,5 +1,6 @@
 #include "overlay_session.hpp"
 #include "overlay_probe.hpp"
+#include "probe_content.hpp"
 #include "transition_editor.hpp"
 #include <tela/windows_overlay.hpp>
 #include <tela/windows_pipe.hpp>
@@ -40,6 +41,7 @@ private:
     std::unique_ptr<tela::WindowsPipe> pipe_;
     HWND target_{};
     int clicks_{};
+    ProbeContent probeContent_;
     std::uint64_t connection_{}, nextId_{};
     bool rebuild_{true};
     tela::PresentationDiagnostics presentation_;
@@ -89,7 +91,7 @@ bool OverlaySession::expired() const {
 }
 bool OverlaySession::updateProbe() {
     if(!config_.probe) return true;
-    synchronizeProbe(runtime_,target_); return IsWindow(target_)!=FALSE;
+    return probeContent_.refresh_from_target(runtime_,reinterpret_cast<std::uintptr_t>(target_),clicks_);
 }
 void OverlaySession::disconnect() {
     if(overlay_) presentation_.append(overlay_->diagnostics());

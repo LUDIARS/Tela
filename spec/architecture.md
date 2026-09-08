@@ -10,6 +10,9 @@ DDD vocabulary, context candidates and layer policy are in [DDD](architecture/dd
 ## Modules
 
 - Core: stable element identity, declarations, input ownership, UI state.
+- [Overlay drawing](feature/overlay-drawing.md): portable shape declarations and
+  anchored callouts. The CPU Raster adapter consumes these with physical clipping;
+  Pictor supplies text, and desktop hosts supply target coordinates and visibility.
 - Pictor adapter: layout output to premultiplied bitmap composition. Existing
   Pictor UIRenderer skips text and exposes Vulkan details, so a complete adapter
   must explicitly bridge text and clip semantics; it is not a cast of enum values.

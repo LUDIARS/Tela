@@ -1,13 +1,9 @@
 #pragma once
 #include <tela/runtime.hpp>
+#include <tela/pixel_surface.hpp>
 #include <memory>
 
 namespace tela {
-// Top-down premultiplied BGRA8, width*4 stride. No GPU handles cross this API.
-struct PixelSurface {
-    int width{}, height{};
-    std::vector<unsigned char> pixels;
-};
 // Explicit CPU composition backend using Pictor's TrueType rasterizer.
 class PictorSurface {
 public:
