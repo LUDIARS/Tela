@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+if(@TELA_BUILD_WINDOWS@ AND NOT TARGET TelaPictorDependency)
+  find_library(TELA_PICTOR_LIBRARY NAMES pictor REQUIRED)
+  add_library(TelaPictorDependency UNKNOWN IMPORTED)
+  set_target_properties(TelaPictorDependency PROPERTIES IMPORTED_LOCATION "${TELA_PICTOR_LIBRARY}")
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/TelaTargets.cmake")
+check_required_components(Tela)

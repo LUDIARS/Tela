@@ -1,0 +1,7 @@
+{
+  "name":"host-overlay",
+  "description":"作業対象に表示を追従させ、対象を見られない間は表示と更新を止める。ウインドウは表示先の実装であり、UX上の境界は対象とツール表示の対応・寿命に置く。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/infrastructure/windows/(windows_overlay|layered_bitmap)\\.(cpp|hpp)$|include/tela/windows_overlay\\.hpp$)"}],
+  "specRefs":["spec/ux/host-overlay.md","spec/windows-composition.md","spec/architecture/ddd.md"]
+}

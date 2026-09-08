@@ -1,0 +1,7 @@
+{
+  "name":"pictor-composition",
+  "description":"描画をPictorの既存文字ラスタライズとBGRA面合成へ適合させる支援責務。業務上の操作やUnityオブジェクトを所有しない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/infrastructure/pictor/|include/tela/pictor_surface\\.hpp$)"}],
+  "specRefs":["spec/windows-composition.md","spec/architecture/ddd.md"]
+}

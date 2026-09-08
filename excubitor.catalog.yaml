@@ -1,0 +1,33 @@
+services:
+  - code: tela
+    name: Tela Scene Overlay
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_overlay.exe
+    exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --transitions, '${ARS_ROOT}/Tela/build-native/transitions.tela']
+    autostart: false
+    restart_policy: 'no'
+  - code: tela-probe-target
+    name: Tela Separate Composition Target
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_probe_target.exe
+    autostart: false
+    restart_policy: 'no'
+  - code: tela-probe
+    name: Tela Pictor Composition Probe
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_overlay.exe
+    exec_args: [--probe, --font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --seconds, '120', --report, '${ARS_ROOT}/Tela/build-native/composition-report.json']
+    autostart: false
+    restart_policy: 'no'

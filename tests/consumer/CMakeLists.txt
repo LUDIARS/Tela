@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(TelaConsumer LANGUAGES CXX)
+find_package(Tela CONFIG REQUIRED)
+add_executable(tela_consumer main.cpp)
+target_link_libraries(tela_consumer PRIVATE Tela::Core Tela::Transitions)
+if(TARGET Tela::Windows)
+  target_link_libraries(tela_consumer PRIVATE Tela::Windows)
+endif()

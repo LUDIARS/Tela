@@ -1,0 +1,6 @@
+{
+  "name": "Tela.Editor",
+  "rootNamespace": "Tela.Editor",
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

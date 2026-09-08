@@ -1,0 +1,7 @@
+{
+  "name":"transition-authoring",
+  "description":"Telaの利用例として画面遷移元・先・条件と対象IDを編集保存する。遷移仕様の意味を共通UIランタイムへ持ち込まない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/application/(transitions|transition_document)\\.cpp$|include/tela/transitions\\.hpp$|examples/windows/|tests/transitions_test\\.cpp$|tests/consumer/)"}],
+  "specRefs":["spec/architecture/ddd.md","spec/contracts.md"]
+}

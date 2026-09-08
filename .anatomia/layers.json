@@ -1,0 +1,22 @@
+{
+  "layers": [
+    {"glob":"include/**","layer":"contract"},
+    {"glob":"src/domain/**","layer":"domain"},
+    {"glob":"src/application/**","layer":"application"},
+    {"glob":"src/infrastructure/**","layer":"infrastructure"},
+    {"glob":"unity/**","layer":"infrastructure"},
+    {"glob":"examples/**","layer":"presentation"},
+    {"glob":"tests/**","layer":"verification"},
+    {"glob":"scripts/**","layer":"verification"}
+  ],
+  "mergeCouplingThreshold":1,
+  "order":["contract","domain","application","infrastructure","presentation","verification"],
+  "allow":{
+    "contract":[],
+    "domain":["contract"],
+    "application":["contract","domain"],
+    "infrastructure":["contract","domain","application"],
+    "presentation":["contract","domain","application","infrastructure"],
+    "verification":["contract","domain","application","infrastructure","presentation"]
+  }
+}

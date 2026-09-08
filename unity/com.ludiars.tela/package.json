@@ -1,0 +1,7 @@
+{
+  "name": "com.ludiars.tela",
+  "version": "0.1.0",
+  "displayName": "Tela Scene Bridge",
+  "description": "Scene geometry, selection and observed input for the native Tela UI runtime.",
+  "unity": "2022.3"
+}

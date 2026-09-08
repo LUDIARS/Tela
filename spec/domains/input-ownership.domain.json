@@ -1,0 +1,7 @@
+{
+  "name":"input-ownership",
+  "description":"同じ物理操作をホストとツールで二重処理しない。透過・専有・共有と、押下から解放までの所有固定および喪失時の取消を所有する。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/domain/input/|include/tela/input_(regions|ownership)\\.hpp$)"}],
+  "specRefs":["spec/ux/input-ownership.md","spec/contracts.md","spec/architecture/ddd.md"]
+}
