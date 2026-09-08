@@ -1,0 +1,17 @@
+{
+  "name": "ui-declaration",
+  "description": "Declarative UI structure, stable identity and rollback; rendering independent.",
+  "specRefs": [
+    "spec/contracts.md:Tela core contracts / Declaration [id: SPEC-TL-DECLARATION]"
+  ],
+  "membership": {
+    "filePatterns": [
+      "^include/tela/.*",
+      "^src/.*",
+      "^examples/.*",
+      "^tests/.*"
+    ]
+  },
+  "presets": [],
+  "templates": []
+}
