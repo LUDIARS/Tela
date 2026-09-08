@@ -1,6 +1,7 @@
 #include "overlay_diagnostics.hpp"
 #include <windows.h>
 #include <fstream>
+#include <ios>
 #include <stdexcept>
 // @spec Overlay lifecycle
 namespace {
@@ -15,10 +16,16 @@ void OverlayDiagnostics::write(const std::string& path, const OverlayRunReport& 
     const auto elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-started_).count();
     const auto cpuMs=(cpuTime()-cpu_)/10000.0;
     std::ofstream report(path); if(!report) throw std::runtime_error("Cannot open diagnostic report");
-    report<<"{\"report_version\":2,\"backend\":\"pictor-cpu-layered\",\"seconds\":"<<elapsed<<",\"cpu_ms\":"<<cpuMs<<",\"frames\":"<<result.frames<<",\"handles_before\":"<<handles_<<",\"handles_after\":"<<handles<<",\"gdi_before\":"<<gdi_<<",\"gdi_after\":"<<GetGuiResources(GetCurrentProcess(),GR_GDIOBJECTS);
+    report<<"{\"report_version\":3,\"backend\":\"pictor-cpu-layered\",\"seconds\":"<<elapsed<<",\"cpu_ms\":"<<cpuMs<<",\"frames\":"<<result.frames<<",\"handles_before\":"<<handles_<<",\"handles_after\":"<<handles<<",\"gdi_before\":"<<gdi_<<",\"gdi_after\":"<<GetGuiResources(GetCurrentProcess(),GR_GDIOBJECTS);
     const auto& p=result.presentation;
     report<<",\"presentation\":{\"last_reason\":\""<<tela::presentation_reason_name(p.last)<<"\",\"target_process\":"<<p.observation.target_process
-        <<",\"foreground_process\":"<<p.observation.foreground_process<<",\"counts\":{";
+        <<",\"foreground_process\":"<<p.observation.foreground_process
+        <<std::boolalpha<<",\"viewport_visible\":"<<p.observation.viewport_visible
+        <<",\"nonempty\":"<<p.observation.nonempty
+        <<",\"target_exists\":"<<p.observation.target_exists
+        <<",\"target_visible\":"<<p.observation.target_visible
+        <<",\"minimized\":"<<p.observation.minimized
+        <<",\"dirty\":"<<p.observation.dirty<<std::noboolalpha<<",\"counts\":{";
     for(unsigned i=0;i<p.counts.size();++i) {
         if(i) report<<',';
         report<<'"'<<tela::presentation_reason_name(static_cast<tela::PresentationReason>(i))<<"\":"<<p.counts[i];

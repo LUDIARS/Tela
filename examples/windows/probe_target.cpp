@@ -21,6 +21,20 @@ int main(){
     WNDCLASSW c{};c.lpfnWndProc=procedure;c.hInstance=GetModuleHandleW(nullptr);c.lpszClassName=L"Tela.ProbeTarget";c.hCursor=LoadCursor(nullptr,IDC_ARROW);
     if(!RegisterClassW(&c))return 1;
     HWND w=CreateWindowW(c.lpszClassName,L"Tela composition probe - separate host",WS_OVERLAPPEDWINDOW,100,100,850,550,nullptr,nullptr,c.hInstance,nullptr);
-    if(!w)return 2;ShowWindow(w,SW_SHOW);SetForegroundWindow(w);
+    if(!w)return 2;
+    // Excubitor hides the launcher console through STARTUPINFO. The first
+    // ShowWindow consumes that startup preference; this explicit visual probe
+    // must then show its own host window independently of the launcher.
+    ShowWindow(w,SW_SHOWDEFAULT);
+    ShowWindow(w,SW_SHOWNORMAL);
+    SetForegroundWindow(w);
+    STARTUPINFOW startup{};startup.cb=sizeof(startup);GetStartupInfoW(&startup);
+    // wShowWindow only carries a launcher preference when STARTF_USESHOWWINDOW
+    // is set; without the flag a zero there is unset, not a request to hide.
+    const bool startupShowValid=(startup.dwFlags&STARTF_USESHOWWINDOW)!=0;
+    std::cout<<"host_startup_show="<<(startupShowValid?static_cast<int>(startup.wShowWindow):-1)
+        <<" host_startup_flags="<<startup.dwFlags
+        <<" host_visible="<<(IsWindowVisible(w)!=FALSE)
+        <<" host_minimized="<<(IsIconic(w)!=FALSE)<<std::endl;
     MSG message{};while(GetMessageW(&message,nullptr,0,0)>0){TranslateMessage(&message);DispatchMessageW(&message);}return 0;
 }
