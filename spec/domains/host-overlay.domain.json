@@ -12,11 +12,15 @@
     },
     {
       "pathPattern": "(^|/)examples/windows/probe_controls\\.(cpp|hpp)$"
+    },
+    {
+      "pathPattern": "(^|/)(src/infrastructure/macos/|include/tela/macos_overlay\\.hpp$|examples/macos/)"
     }
   ],
   "specRefs": [
     "spec/ux/host-overlay.md",
     "spec/windows-composition.md",
-    "spec/architecture/ddd.md"
+    "spec/architecture/ddd.md",
+    "spec/macos-composition.md"
   ]
 }

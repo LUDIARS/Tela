@@ -38,6 +38,11 @@ presentation. Restore invalidates the stored surface. Native windows, capture,
 GDI surfaces and IPC handles are released by their owners. The current backend
 is explicit Pictor CPU bitmap composition, not transparent Vulkan presentation.
 
+The optional MacOS adapter follows the coordinate conversion and native ownership
+rules in [SPEC-TL-MACOS](macos-composition.md). macOS global points are scaled with
+the target display's backing scale for each viewport revision; anchor producers
+must use that same basis. Native Mac acceptance remains required.
+
 ## Unity bridge [id: SPEC-TL-BRIDGE]
 
 The wire protocol carries protocol version, host/view identity, monotonic

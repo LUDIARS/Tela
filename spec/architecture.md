@@ -18,6 +18,9 @@ DDD vocabulary, context candidates and layer policy are in [DDD](architecture/dd
   must explicitly bridge text and clip semantics; it is not a cast of enum values.
 - Desktop host: window lifecycle, transparent composition, hit regions,
   focus, gesture capture, DPI, target visibility and position tracking.
+- [macOS host](macos-composition.md): optional AppKit transparent panels sharing
+  the Pictor CPU surface; target-window tracking and primary-pointer ownership.
+  The Mac implementation requires native build and acceptance on a Mac.
 - Unity bridge: Scene view bounds, camera-projected anchors, observed
   input and selection notifications. UI rendering remains in native Tela.
 - Applications: transition specification data, validation and editing actions.

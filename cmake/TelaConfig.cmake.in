@@ -1,5 +1,5 @@
 @PACKAGE_INIT@
-if(@TELA_BUILD_WINDOWS@ AND NOT TARGET TelaPictorDependency)
+if((@TELA_BUILD_WINDOWS@ OR @TELA_BUILD_MACOS@ OR @TELA_BUILD_PICTOR@) AND NOT TARGET TelaPictorDependency)
   find_library(TELA_PICTOR_LIBRARY NAMES pictor REQUIRED)
   add_library(TelaPictorDependency UNKNOWN IMPORTED)
   set_target_properties(TelaPictorDependency PROPERTIES IMPORTED_LOCATION "${TELA_PICTOR_LIBRARY}")
