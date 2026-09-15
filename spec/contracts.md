@@ -98,3 +98,23 @@ Visible scenes declare outlined elements and labels with passthrough input. Ever
 scene keeps an exclusive toggle button. A toggle changes session state only and is
 never written back. Unchanged declaration inputs are not redeclared, and a hidden
 host declares nothing.
+
+## Spec view [id: SPEC-TL-SPEC-VIEW]
+
+Pf exports its specification visualization as `TELA_SPEC_VIEW 1`: LF lines, no BOM, then
+`view "project" "version" width height`, `group "id" "name" visible` (0 or 1, in the axis'
+fixed order) and `card "group id" "code" "title" "status" version x y width height` in the
+exported view's coordinates. Fields use the transition file's quote and backslash escaping.
+At most 32 groups, 256 cards and 4 MiB; sizes are positive, coordinates finite within
+±100000 and the card version a count within 0..1000000. Group IDs and card codes are
+nonempty and at most 256 bytes because they become element ID segments; other fields are
+at most 4096 bytes. Unknown records, a missing or repeated view header, an empty group
+list, duplicate IDs, cards of unknown groups and trailing data reject the whole file.
+Tela only reads the file; Pf remains the source of truth.
+
+The view is fitted into the logical viewport, keeping its aspect ratio and centered.
+Visible groups declare outlined cards with a code line (`code status vN`) and a title line,
+both with passthrough input. Every group keeps an exclusive toggle button. A toggle changes
+session state only and is never written back. Unchanged declaration inputs are not
+redeclared, and a hidden host declares nothing. The group palette matches Pf's
+`SPEC_VIEW_PALETTE`, so the Pf screen and the Tela overlay draw the same picture.

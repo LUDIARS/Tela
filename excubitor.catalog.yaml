@@ -31,3 +31,14 @@ services:
     exec_args: [--probe, --font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --seconds, '120', --report, '${ARS_ROOT}/Tela/build-native/composition-report.json']
     autostart: false
     restart_policy: 'no'
+  - code: tela-spec-view
+    name: Tela Spec View Overlay
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_overlay.exe
+    exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --spec-view, '${ARS_ROOT}/Tela/build-native/spec-view.tela', --attach, probe-target, --seconds, '300']
+    autostart: false
+    restart_policy: 'no'

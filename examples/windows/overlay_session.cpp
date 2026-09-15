@@ -2,6 +2,7 @@
 #include "overlay_probe.hpp"
 #include "probe_content.hpp"
 #include "scene_overlay_content.hpp"
+#include "spec_view_content.hpp"
 #include "transition_editor.hpp"
 #include <tela/windows_overlay.hpp>
 #include <tela/windows_pipe.hpp>
@@ -15,6 +16,7 @@
 // @spec Unity bridge
 // @spec Transition authoring
 // @spec Scene overlay
+// @spec Spec view
 namespace {
 using Clock=std::chrono::steady_clock;
 class OverlaySession {
@@ -25,7 +27,9 @@ private:
     void save(tela::Transition value);
     void add(const tela::Anchor& anchor);
     void rebuildDocument();
+    HWND findProbeTarget();
     void startProbe();
+    void attachTarget();
     bool pumpMessages();
     bool expired() const;
     bool updateProbe();
@@ -41,6 +45,7 @@ private:
     tela::BridgeSession bridge_;
     // Declared before the overlay so input windows are released before the actions' owner.
     std::unique_ptr<SceneOverlayContent> sceneContent_;
+    std::unique_ptr<SpecViewContent> specContent_;
     std::unique_ptr<tela::WindowsOverlay> overlay_;
     std::unique_ptr<tela::WindowsPipe> pipe_;
     HWND target_{};
@@ -53,8 +58,11 @@ private:
 };
 OverlaySession::OverlaySession(const Options& config) : config_(config),renderer_(config.font),bridge_(runtime_) {
     if(config_.probe) { startProbe(); return; }
-    if(!config_.sceneOverlay.empty()) sceneContent_=std::make_unique<SceneOverlayContent>(config_.sceneOverlay);
+    if(!config_.specView.empty()) specContent_=std::make_unique<SpecViewContent>(config_.specView);
+    else if(!config_.sceneOverlay.empty()) sceneContent_=std::make_unique<SceneOverlayContent>(config_.sceneOverlay);
     else if(std::filesystem::exists(config_.file)) data_.load(config_.file);
+    // A read-only view can sit on the separate probe target window instead of waiting for Unity.
+    if(config_.attachProbeTarget) { attachTarget(); return; }
     pipe_=std::make_unique<tela::WindowsPipe>(config_.pipe);
 }
 void OverlaySession::save(tela::Transition value) {
@@ -69,7 +77,8 @@ void OverlaySession::add(const tela::Anchor& anchor) {
 }
 void OverlaySession::rebuildDocument() {
     if(config_.probe) return;
-    // Scene overlay content compares its own declaration inputs, including viewport changes.
+    // Read-only content compares its own declaration inputs, including viewport changes.
+    if(specContent_) { specContent_->refresh(runtime_); return; }
     if(sceneContent_) { sceneContent_->refresh(runtime_); return; }
     if(!rebuild_) return;
     runtime_.document(tela::transition_document(data_,bridge_.anchors(),runtime_.viewport(),
@@ -77,16 +86,26 @@ void OverlaySession::rebuildDocument() {
         [this](const auto& a){add(a);}));
     rebuild_=false;
 }
+HWND OverlaySession::findProbeTarget() {
+    HWND window=FindWindowW(L"Tela.ProbeTarget",nullptr);
+    if(!window) throw std::runtime_error("Start tela-probe-target through Excubitor first");
+    return window;
+}
 void OverlaySession::startProbe() {
-    target_=FindWindowW(L"Tela.ProbeTarget",nullptr);
-    if(!target_) throw std::runtime_error("Start tela-probe-target through Excubitor first");
+    target_=findProbeTarget();
     synchronizeProbe(runtime_,target_); runtime_.document(probeDocument(clicks_,runtime_));
+    overlay_=std::make_unique<tela::WindowsOverlay>(runtime_,renderer_,reinterpret_cast<std::uintptr_t>(target_));
+}
+void OverlaySession::attachTarget() {
+    target_=findProbeTarget();
+    synchronizeProbe(runtime_,target_); rebuildDocument();
     overlay_=std::make_unique<tela::WindowsOverlay>(runtime_,renderer_,reinterpret_cast<std::uintptr_t>(target_));
 }
 bool OverlaySession::pumpMessages() {
     HANDLE wake=pipe_?reinterpret_cast<HANDLE>(pipe_->wake_handle()):nullptr;
-    // Pipe delivery and native messages wake immediately; only the probe polls geometry.
-    MsgWaitForMultipleObjects(wake?1:0,wake?&wake:nullptr,FALSE,config_.probe?100:1000,QS_ALLINPUT);
+    // Pipe delivery and native messages wake immediately; only a tracked window polls geometry.
+    const bool polling=config_.probe||config_.attachProbeTarget;
+    MsgWaitForMultipleObjects(wake?1:0,wake?&wake:nullptr,FALSE,polling?100:1000,QS_ALLINPUT);
     bool running=true; MSG message{};
     while(PeekMessageW(&message,nullptr,0,0,PM_REMOVE)) {
         if(message.message==WM_QUIT) running=false;
@@ -98,8 +117,11 @@ bool OverlaySession::expired() const {
     return config_.seconds && Clock::now()-started_>=std::chrono::seconds(config_.seconds);
 }
 bool OverlaySession::updateProbe() {
-    if(!config_.probe) return true;
-    return probeContent_.refresh_from_target(runtime_,reinterpret_cast<std::uintptr_t>(target_),clicks_);
+    if(config_.probe) return probeContent_.refresh_from_target(runtime_,reinterpret_cast<std::uintptr_t>(target_),clicks_);
+    if(!target_) return true;
+    // Attached content tracks the same standalone window but keeps its own declaration.
+    synchronizeProbe(runtime_,target_);
+    return IsWindow(target_)!=FALSE;
 }
 void OverlaySession::disconnect() {
     if(overlay_) presentation_.append(overlay_->diagnostics());

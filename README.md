@@ -13,12 +13,16 @@ Iter can reuse the same C++ contracts without depending on Unity.
 | `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe |
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
 | `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
+| `Tela::SpecView` | Read-only Pf spec view file, view fitting and per-group show/hide declarations |
 
 `unity/com.ludiars.tela` is an Editor-only UPM package. It sends Scene geometry,
 anchors, selection and observed input; native Tela renders the UI. The example
 host includes a modeless Windows text editor for transition source/target/condition.
 With `--scene-overlay <file>` it instead shows a Pf scene export over the Scene view and
 toggles each layered scene ([scene overlay](spec/feature/scene-overlay.md)).
+With `--spec-view <file>` it shows a Pf specification visualization export and toggles each
+group ([spec view](spec/feature/spec-view.md)); adding `--attach probe-target` puts it on the
+separate probe window instead of waiting for Unity.
 The wire format and the transition file are versioned, bounded UTF-8 formats.
 
 C++ library/executable builds, four library contract tests and Unity 6 reference

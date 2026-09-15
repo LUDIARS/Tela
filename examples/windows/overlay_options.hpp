@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
 // @spec Overlay lifecycle
-struct Options {std::string font,pipe="tela-scene",file="transitions.tela",sceneOverlay,report;bool probe{},transitionsGiven{};int seconds{};};
+// @spec Spec view
+struct Options {std::string font,pipe="tela-scene",file="transitions.tela",sceneOverlay,specView,report;bool probe{},transitionsGiven{},attachProbeTarget{};int seconds{};};
 Options options(int argc, char** argv);
