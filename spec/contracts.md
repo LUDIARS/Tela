@@ -80,3 +80,21 @@ Invalid loads leave the in-memory model unchanged. Save writes a sibling pending
 file before replacing the destination. A leftover pending file is reported and
 requires recovery; it is not silently overwritten. Conditions are stored as
 specification text and are never evaluated as code.
+
+## Scene overlay [id: SPEC-TL-SCENE-OVERLAY]
+
+Pf exports one frame of a scene and the scenes layered over it as
+`TELA_SCENE_OVERLAY 1`: LF lines, no BOM, then `frame "name" width height`,
+`scene "id" "name" visible` (0 or 1, bottom to top) and
+`element "scene id" "id" "kind" "label" x y width height` in the exported frame's
+coordinates. Fields use the transition file's quote and backslash escaping. At most
+32 scenes, 1024 elements and 4 MiB; sizes are positive and coordinates finite within
+±100000. Unknown records, a missing or repeated frame, duplicate IDs, elements of
+unknown scenes and trailing data reject the whole file. Tela only reads the file;
+Pf remains the source of truth.
+
+The frame is fitted into the logical viewport, keeping its aspect ratio and centered.
+Visible scenes declare outlined elements and labels with passthrough input. Every
+scene keeps an exclusive toggle button. A toggle changes session state only and is
+never written back. Unchanged declaration inputs are not redeclared, and a hidden
+host declares nothing.

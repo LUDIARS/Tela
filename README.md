@@ -12,10 +12,13 @@ Iter can reuse the same C++ contracts without depending on Unity.
 | `Tela::Pictor` | Explicit CPU TrueType/premultiplied bitmap renderer using existing Pictor |
 | `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe |
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
+| `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
 
 `unity/com.ludiars.tela` is an Editor-only UPM package. It sends Scene geometry,
 anchors, selection and observed input; native Tela renders the UI. The example
 host includes a modeless Windows text editor for transition source/target/condition.
+With `--scene-overlay <file>` it instead shows a Pf scene export over the Scene view and
+toggles each layered scene ([scene overlay](spec/feature/scene-overlay.md)).
 The wire format and the transition file are versioned, bounded UTF-8 formats.
 
 C++ library/executable builds, four library contract tests and Unity 6 reference

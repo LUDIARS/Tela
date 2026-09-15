@@ -1,0 +1,7 @@
+{
+  "name":"scene-overlay",
+  "description":"Pfが書き出したシーンの仮配置を読み込み、ホストのビューへ収めてシーン単位で表示を切り替える。Pfのデータを編集・保存しない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/application/scene_overlay(_file|_document)?\\.cpp$|include/tela/scene_overlay\\.hpp$|examples/windows/scene_overlay_content\\.(hpp|cpp)$|tests/scene_overlay_test\\.cpp$)"}],
+  "specRefs":["spec/feature/scene-overlay.md","spec/contracts.md"]
+}

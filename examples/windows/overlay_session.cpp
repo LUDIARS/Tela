@@ -1,6 +1,7 @@
 #include "overlay_session.hpp"
 #include "overlay_probe.hpp"
 #include "probe_content.hpp"
+#include "scene_overlay_content.hpp"
 #include "transition_editor.hpp"
 #include <tela/windows_overlay.hpp>
 #include <tela/windows_pipe.hpp>
@@ -13,6 +14,7 @@
 // @spec Overlay lifecycle
 // @spec Unity bridge
 // @spec Transition authoring
+// @spec Scene overlay
 namespace {
 using Clock=std::chrono::steady_clock;
 class OverlaySession {
@@ -37,6 +39,8 @@ private:
     tela::Transitions data_;
     TransitionEditor editor_;
     tela::BridgeSession bridge_;
+    // Declared before the overlay so input windows are released before the actions' owner.
+    std::unique_ptr<SceneOverlayContent> sceneContent_;
     std::unique_ptr<tela::WindowsOverlay> overlay_;
     std::unique_ptr<tela::WindowsPipe> pipe_;
     HWND target_{};
@@ -49,7 +53,8 @@ private:
 };
 OverlaySession::OverlaySession(const Options& config) : config_(config),renderer_(config.font),bridge_(runtime_) {
     if(config_.probe) { startProbe(); return; }
-    if(std::filesystem::exists(config_.file)) data_.load(config_.file);
+    if(!config_.sceneOverlay.empty()) sceneContent_=std::make_unique<SceneOverlayContent>(config_.sceneOverlay);
+    else if(std::filesystem::exists(config_.file)) data_.load(config_.file);
     pipe_=std::make_unique<tela::WindowsPipe>(config_.pipe);
 }
 void OverlaySession::save(tela::Transition value) {
@@ -63,7 +68,10 @@ void OverlaySession::add(const tela::Anchor& anchor) {
     editor_.open({id,"Screen","Destination","",anchor.object_id},[this](auto value){save(std::move(value));});
 }
 void OverlaySession::rebuildDocument() {
-    if(config_.probe || !rebuild_) return;
+    if(config_.probe) return;
+    // Scene overlay content compares its own declaration inputs, including viewport changes.
+    if(sceneContent_) { sceneContent_->refresh(runtime_); return; }
+    if(!rebuild_) return;
     runtime_.document(tela::transition_document(data_,bridge_.anchors(),runtime_.viewport(),
         [this](const auto& t){editor_.open(t,[this](auto value){save(std::move(value));});},
         [this](const auto& a){add(a);}));

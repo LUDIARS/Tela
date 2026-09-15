@@ -14,6 +14,7 @@ are an implementation proposal, not a record of human boundary approval.
 | host-bridge | supporting | Anti-corruption layer translating Unity/other host identity, anchors, selection and input into versioned Tela values |
 | pictor-composition | supporting adapter | TrueType text, clipping and premultiplied pixel composition; no application actions |
 | transition-authoring | sample application | Transition identity, source/destination/condition, stable object association, validated persistence |
+| scene-overlay | application | Read-only Pf scene export: frame fitting, scenes bottom to top, per-scene visibility as session state |
 
 Windows are display hosts, not automatically a separate business domain. UI parts
 belong to tool composition unless their own vocabulary and independent invariants
@@ -30,7 +31,9 @@ rules are isolated in the input domain implementation, not mixed into Win32 even
 handling. `Viewport`, `Rect`, `Theme` and wire events are values, not packed ABIs.
 `BridgeSession` is the connection boundary, rejecting old generations/revisions
 before they can affect the runtime. `Transitions` is separate application data;
-it is not part of the reusable tool document model.
+it is not part of the reusable tool document model. `SceneOverlay` is likewise
+application data: a read-only copy of a Pf export whose visibility toggles never
+write back, so Pf stays the only editable source of scene placement.
 
 The dependency direction is presentation/composition root → application → domain.
 Infrastructure adapters call the domain/application contracts; domain code has no
