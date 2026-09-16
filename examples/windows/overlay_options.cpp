@@ -13,6 +13,7 @@ Options options(int argc,char** argv){
         if(arg=="--font")result.font=value;else if(arg=="--pipe")result.pipe=value;else if(arg=="--transitions"){result.file=value;result.transitionsGiven=true;}else if(arg=="--report")result.report=value;
         else if(arg=="--scene-overlay")result.sceneOverlay=value;
         else if(arg=="--spec-view")result.specView=value;
+        else if(arg=="--graph")result.graph=value;
         // Attaching is independent of the content: the same declaration can sit on the Unity
         // host through the bridge, or on the separate probe target window for a standalone run.
         else if(arg=="--attach"){if(value=="probe-target")result.attachProbeTarget=true;else if(value!="unity")throw std::invalid_argument("--attach must be unity or probe-target");}
@@ -27,8 +28,9 @@ Options options(int argc,char** argv){
     // One content source per session: a read-only view never silently edits a transition file.
     if(!result.sceneOverlay.empty()&&(result.probe||result.transitionsGiven))throw std::invalid_argument("--scene-overlay cannot be combined with --probe or --transitions");
     if(!result.specView.empty()&&(result.probe||result.transitionsGiven||!result.sceneOverlay.empty()))throw std::invalid_argument("--spec-view cannot be combined with --probe, --transitions or --scene-overlay");
+    if(!result.graph.empty()&&(result.probe||result.transitionsGiven||!result.sceneOverlay.empty()||!result.specView.empty()))throw std::invalid_argument("--graph cannot be combined with another content source");
     // --probe already owns the probe target window, and the transition editor needs the Unity anchors.
-    if(result.attachProbeTarget&&(result.probe||(result.specView.empty()&&result.sceneOverlay.empty())))throw std::invalid_argument("--attach probe-target requires --spec-view or --scene-overlay");
+    if(result.attachProbeTarget&&(result.probe||(result.specView.empty()&&result.sceneOverlay.empty()&&result.graph.empty())))throw std::invalid_argument("--attach probe-target requires --spec-view, --graph or --scene-overlay");
     // Only the attached adapter owns its viewport; through the bridge Unity decides the geometry.
     if(result.placement!=tela::Placement::inside&&!result.attachProbeTarget)throw std::invalid_argument("--place other than inside requires --attach probe-target");
     return result;

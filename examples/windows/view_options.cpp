@@ -18,6 +18,7 @@ ViewOptions viewOptions(int argc, char** argv) {
         std::string value = argv[++i];
         if(arg == "--font") result.font = value;
         else if(arg == "--spec-view") result.specView = value;
+        else if(arg == "--graph") result.graph = value;
         else if(arg == "--title") result.title = value;
         else if(arg == "--width") result.width = bounded(value, 160, 16384, "width must be 160..16384");
         else if(arg == "--height") result.height = bounded(value, 120, 16384, "height must be 120..16384");
@@ -26,7 +27,9 @@ ViewOptions viewOptions(int argc, char** argv) {
         else throw std::invalid_argument("Unknown option");
     }
     if(result.font.empty()) throw std::invalid_argument("--font <TrueType file> is required");
-    // One content source per run, like the overlay host. Stage 1 renders the Pf spec view.
-    if(result.specView.empty()) throw std::invalid_argument("--spec-view <file> is required");
+    // Exactly one content source per run, like the overlay host: a window shows one thing.
+    const int sources = static_cast<int>(!result.specView.empty()) + static_cast<int>(!result.graph.empty());
+    if(sources == 0) throw std::invalid_argument("--spec-view <file> or --graph <file> is required");
+    if(sources > 1) throw std::invalid_argument("--spec-view and --graph cannot be combined");
     return result;
 }

@@ -3,6 +3,7 @@
 #include "overlay_probe.hpp"
 #include "probe_content.hpp"
 #include "scene_overlay_content.hpp"
+#include "graph_content.hpp"
 #include "spec_view_content.hpp"
 #include "transition_editor.hpp"
 #include <tela/windows_overlay.hpp>
@@ -49,6 +50,7 @@ private:
     // Declared before the overlay so input windows are released before the actions' owner.
     std::unique_ptr<SceneOverlayContent> sceneContent_;
     std::unique_ptr<SpecViewContent> specContent_;
+    std::unique_ptr<GraphContent> graphContent_;
     std::unique_ptr<tela::WindowsOverlay> overlay_;
     std::unique_ptr<tela::WindowsPipe> pipe_;
     // The read-only content's own size, used when the viewport sits outside the host.
@@ -64,7 +66,10 @@ private:
 OverlaySession::OverlaySession(const Options& config) : config_(config),renderer_(config.font),bridge_(runtime_) {
     applyTheme();
     if(config_.probe) { startProbe(); return; }
-    if(!config_.specView.empty()) {
+    if(!config_.graph.empty()) {
+        graphContent_=std::make_unique<GraphContent>(config_.graph);
+        contentBounds_=graphContent_->natural_bounds();
+    } else if(!config_.specView.empty()) {
         specContent_=std::make_unique<SpecViewContent>(config_.specView);
         contentBounds_=specContent_->natural_bounds();
     } else if(!config_.sceneOverlay.empty()) {
@@ -97,6 +102,7 @@ void OverlaySession::add(const tela::Anchor& anchor) {
 void OverlaySession::rebuildDocument() {
     if(config_.probe) return;
     // Read-only content compares its own declaration inputs, including viewport changes.
+    if(graphContent_) { graphContent_->refresh(runtime_); return; }
     if(specContent_) { specContent_->refresh(runtime_); return; }
     if(sceneContent_) { sceneContent_->refresh(runtime_); return; }
     if(!rebuild_) return;

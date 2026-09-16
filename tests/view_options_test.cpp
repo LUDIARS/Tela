@@ -26,6 +26,9 @@ int main() {
         require(shown.title == "Tela" && !shown.fullscreen, "a view starts windowed with a default title");
         require(shown.width == 0 && shown.height == 0, "no size means the content's exported size");
 
+        const auto graph = parse({"--font", "f.ttf", "--graph", "g.tela"});
+        require(graph.graph == "g.tela" && graph.specView.empty(), "a graph is the other content source");
+
         const auto sized = parse({"--font", "f.ttf", "--spec-view", "v.tela", "--fullscreen",
                                   "--width", "1280", "--height", "720", "--font-size", "20",
                                   "--seconds", "30", "--title", "Pf"});
@@ -35,6 +38,7 @@ int main() {
         // A run without a font or content cannot draw anything, so it fails instead of showing an empty window.
         rejects({"--spec-view", "v.tela"}, "missing font accepted");
         rejects({"--font", "f.ttf"}, "missing content accepted");
+        rejects({"--font", "f.ttf", "--spec-view", "v.tela", "--graph", "g.tela"}, "two content sources accepted");
         rejects({"--font", "f.ttf", "--spec-view", "v.tela", "--font-size", "4"}, "tiny font size accepted");
         rejects({"--font", "f.ttf", "--spec-view", "v.tela", "--font-size", "200"}, "huge font size accepted");
         rejects({"--font", "f.ttf", "--spec-view", "v.tela", "--width", "10"}, "tiny width accepted");

@@ -14,6 +14,7 @@ Iter can reuse the same C++ contracts without depending on Unity.
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
 | `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
 | `Tela::SpecView` | Read-only Pf spec view file, view fitting and per-group show/hide declarations |
+| `Tela::Graph` | Read-only Pf relation graph file, fitting and per-classification show/hide declarations |
 
 `unity/com.ludiars.tela` is an Editor-only UPM package. It sends Scene geometry,
 anchors, selection and observed input; native Tela renders the UI. The example
@@ -26,6 +27,8 @@ separate probe window instead of waiting for Unity.
 When the target application cannot be started at all, `tela_view --font <ttf> --spec-view <file>
 [--fullscreen]` draws the same content in Tela's own window at the exported size
 ([view host](spec/feature/view-host.md)).
+With `--graph <file>` either host draws a Pf domain relation diagram, whose node positions
+and edge routes come from Pf and are never re-curved ([graph view](spec/feature/graph-view.md)).
 `--place left|right|above|below` puts the view beside that window at its own size instead of
 inside it, and `--font-size <8..96>` picks the text size for the run
 ([overlay placement](spec/feature/overlay-placement.md)).

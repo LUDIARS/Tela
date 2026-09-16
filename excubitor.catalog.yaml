@@ -66,3 +66,15 @@ services:
     exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --spec-view, '${ARS_ROOT}/Tela/build-native/spec-view.tela', --title, 'Praeforma spec view', --seconds, '300']
     autostart: false
     restart_policy: 'no'
+  # Pf のドメイン関係図をネイティブに表示する。
+  - code: tela-graph-view
+    name: Tela Domain Graph View
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_view.exe
+    exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --graph, '${ARS_ROOT}/Tela/build-native/domain-graph.tela', --title, 'Praeforma domain graph', --seconds, '300']
+    autostart: false
+    restart_policy: 'no'

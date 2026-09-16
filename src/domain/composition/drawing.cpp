@@ -5,6 +5,17 @@
 
 namespace tela {
 namespace {
+constexpr Color canvas_base{26, 31, 42, 235};
+constexpr float accent_mix = 0.19f;
+constexpr unsigned char mix(unsigned char base, unsigned char accent) {
+    return static_cast<unsigned char>(base + (accent - base) * accent_mix + 0.5f);
+}
+}
+Color tint(Color accent) {
+    return {mix(canvas_base.r, accent.r), mix(canvas_base.g, accent.g),
+            mix(canvas_base.b, accent.b), canvas_base.a};
+}
+namespace {
 void coordinate(float value) {
     if(!std::isfinite(value) || std::abs(value)>1000000)
         throw std::invalid_argument("Invalid drawing coordinate");

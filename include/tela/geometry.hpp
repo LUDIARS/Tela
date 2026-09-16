@@ -33,6 +33,10 @@ struct Color {
     unsigned char r{}, g{}, b{}, a{255};
     bool operator==(const Color&) const = default;
 };
+// Pf draws its content on a dark canvas tinted toward an accent colour. An overlay or a view
+// has no canvas of its own, so it pre-blends the same result and the near-white text stays
+// readable over a light host as well as a dark one.
+Color tint(Color accent);
 struct Theme {
     Color panel{25,30,42,220}, text{245,246,250,255};
     Color button{52,79,120,245}, pressed{90,136,194,255};

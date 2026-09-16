@@ -157,3 +157,29 @@ nothing, and closing releases presentation and input ownership exactly as a lost
 `Layout::lines` is the number of text rows a box reserves (1 by default, at most 64). The
 renderer wraps inside the box width, so a single row silently drops everything past the
 first break; a caller that wants wrapped text declares the rows it needs.
+
+## Graph view [id: SPEC-TL-GRAPH]
+
+Pf exports its domain relation diagram as `TELA_GRAPH 1`: LF lines, no BOM, then
+`graph "project" "title" width height`, `group "id" "name" visible r g b` (0 or 1 and three
+0..255 channels, in the diagram's column order), `node "group id" "id" "label" x y width height`
+and, for each relation, `edge "id" "from node" "to node" dashed` followed by its
+`point "edge id" x y` records in route order. Fields use the transition file's quote and
+backslash escaping. At most 8 groups, 128 nodes, 256 edges, 4096 route points and 4 MiB;
+sizes are positive and coordinates finite within ±100000. IDs are nonempty and at most 256
+bytes because they become element ID segments. Unknown records, a missing or repeated
+header, an empty group or node list, duplicate IDs, a node in an unknown group, an edge with
+an unknown end, a point before or outside its edge, an edge with fewer than two points and
+trailing data reject the whole file. Tela only reads the file; Pf remains the source of truth.
+
+Tela performs no layout: node positions and edge routes come from Pf and are drawn as given,
+never re-curved, so the Pf screen and the Tela drawing keep the same shape. The graph is
+fitted into the logical viewport, keeping its aspect ratio and centered. Visible groups draw
+their nodes outlined in the group colour, filled with `tint` of that colour, and
+labelled over the rows the box allows. An edge is drawn only while both of its ends are in
+visible groups, solid for membership and dashed for a parent link. Every group keeps an
+exclusive toggle; a toggle changes session state only and is never written back. Unchanged
+declaration inputs are not redeclared, and a hidden host declares nothing.
+
+`tint(accent)` is the shared blend of Pf's dark canvas with an accent colour, used
+wherever Tela draws Pf content without a canvas of its own.

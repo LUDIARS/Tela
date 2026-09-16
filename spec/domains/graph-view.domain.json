@@ -1,0 +1,7 @@
+{
+  "name":"graph-view",
+  "description":"Pfが書き出した関係図を読み込み、ノードと経路をホストのビューへ収めて分類単位で表示を切り替える。経路はPfが決めたものを描くだけで、Telaはレイアウトを計算しない。Pfのデータを編集・保存しない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/application/graph(_file|_document)?\\.cpp$|include/tela/graph\\.hpp$|examples/windows/graph_content\\.(hpp|cpp)$|tests/graph_test\\.cpp$)"}],
+  "specRefs":["spec/feature/graph-view.md","spec/contracts.md","spec/ux/product.md"]
+}
