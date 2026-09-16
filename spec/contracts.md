@@ -178,6 +178,10 @@ fitted into the logical viewport, keeping its aspect ratio and centered. Visible
 their nodes outlined in the group colour, filled with `tint` of that colour, and
 labelled over the rows the box allows. An edge is drawn only while both of its ends are in
 visible groups, solid for membership and dashed for a parent link. Every group keeps an
+Every relation is directed, so its end carries an arrowhead taken from the route's last
+segment and drawn solid, which keeps the direction readable on a dashed relation too. A route
+whose last segment has no length draws no arrowhead. Each relation therefore costs two shapes,
+so a canvas holds at most 100 of them.
 exclusive toggle; a toggle changes session state only and is never written back. Unchanged
 declaration inputs are not redeclared, and a hidden host declares nothing.
 

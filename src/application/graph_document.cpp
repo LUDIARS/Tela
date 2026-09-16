@@ -1,6 +1,7 @@
 // @spec SPEC-TL-GRAPH
 #include <tela/graph.hpp>
 #include <algorithm>
+#include <cmath>
 
 namespace tela {
 namespace {
@@ -13,6 +14,11 @@ constexpr float assumed_line_height = 24; // Pf sizes nodes for the default 16 p
 // Pf draws the relations in a neutral grey so the classification colours stay on the nodes.
 constexpr Color edge_color{102, 112, 133, 255};
 constexpr float edge_width = 2, edge_dash = 6, edge_gap = 4;
+// 関係は有向なので終端に矢じりを描く。経路は Pf が決めたものなので、向きはその最後の
+// 区間から取る。矢じりは実線で描き、破線の関係でも向きが読めるようにする。
+constexpr float arrow_length = 12, arrow_spread = 0.42f; // rad, およそ 24 度
+// 1 つの関係は経路と矢じりの 2 図形になるので、1 キャンバス 100 本までに分ける。
+constexpr std::size_t edges_per_canvas = 100;
 
 std::string group_prefix(const std::string& group_id) { return "graph/group/" + group_id; }
 float layout_extent(float value) { return std::clamp(value, 1.0f, max_layout_extent); }
@@ -61,6 +67,21 @@ void declare_nodes(Document& document, const Graph& graph, const GraphGroup& gro
     }
 }
 
+// 経路の終端に向きを示す折れ線を足す。最後の区間が長さを持たない経路には描かない。
+void draw_arrow(Drawing& drawing, const std::vector<Point>& points, float scale) {
+    const Point tip{points.back().x * scale, points.back().y * scale};
+    const Point previous{points[points.size() - 2].x * scale, points[points.size() - 2].y * scale};
+    const float dx = tip.x - previous.x, dy = tip.y - previous.y;
+    const float length = std::sqrt(dx * dx + dy * dy);
+    if(!(length > 0)) return;
+    const float angle = std::atan2(dy, dx);
+    const auto wing = [&](float offset) {
+        return Point{tip.x - arrow_length * std::cos(angle + offset),
+                     tip.y - arrow_length * std::sin(angle + offset)};
+    };
+    drawing.polyline({wing(-arrow_spread), tip, wing(arrow_spread)}, {edge_color, edge_width});
+}
+
 void declare_edges(Document& document, const Graph& graph, Rect area, float scale) {
     std::vector<const GraphEdge*> drawn;
     for(const auto& edge : graph.edges()) {
@@ -73,18 +94,19 @@ void declare_edges(Document& document, const Graph& graph, Rect area, float scal
     if(drawn.empty()) return;
     const Layout canvas_layout{.width = layout_extent(area.width), .height = layout_extent(area.height),
         .padding = 0, .positioned = true, .x = area.x, .y = area.y};
-    for(std::size_t start = 0; start < drawn.size(); start += shapes_per_canvas) {
+    for(std::size_t start = 0; start < drawn.size(); start += edges_per_canvas) {
         Drawing drawing;
-        const auto end = std::min(drawn.size(), start + shapes_per_canvas);
+        const auto end = std::min(drawn.size(), start + edges_per_canvas);
         for(std::size_t index = start; index < end; ++index) {
             std::vector<Point> points;
             points.reserve(drawn[index]->points.size());
             for(const auto& point : drawn[index]->points) points.push_back({point.x * scale, point.y * scale});
             const Stroke stroke{edge_color, edge_width,
                 drawn[index]->dashed ? edge_dash : 0.f, drawn[index]->dashed ? edge_gap : 0.f};
-            drawing.polyline(std::move(points), stroke);
+            drawing.polyline(points, stroke);
+            draw_arrow(drawing, drawn[index]->points, scale);
         }
-        document.canvas("graph/edges/" + std::to_string(start / shapes_per_canvas), std::move(drawing), canvas_layout);
+        document.canvas("graph/edges/" + std::to_string(start / edges_per_canvas), std::move(drawing), canvas_layout);
     }
 }
 }

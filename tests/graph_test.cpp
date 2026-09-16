@@ -110,9 +110,13 @@ void composition(const std::filesystem::path& path) {
     require(find(document, "graph/group/core/heading") != nullptr, "each visible column is headed");
     require(find(document, "graph/group/core/shapes/0") != nullptr, "nodes are drawn as one chunked canvas");
     const auto* edges = find(document, "graph/edges/0");
-    require(edges != nullptr && edges->drawing.shapes().size() == 1, "visible relations are drawn together");
+    // 関係は経路と矢じりの 2 図形になる。有向なので向きが読めないと意味が変わる。
+    require(edges != nullptr && edges->drawing.shapes().size() == 2, "a relation draws its route and its arrowhead");
     require(edges->drawing.shapes()[0].points.size() == 17, "the exported route is drawn as given, not re-curved");
     require(edges->drawing.shapes()[0].stroke.dash == 0, "a membership relation is solid");
+    const auto& arrow = edges->drawing.shapes()[1];
+    require(arrow.points.size() == 3 && arrow.stroke.dash == 0, "the arrowhead is a solid chevron");
+    require(arrow.points[1] == edges->drawing.shapes()[0].points.back(), "the arrowhead sits at the end of the route");
     const auto* toggle = find(document, "graph/toggle/business");
     require(toggle != nullptr && toggle->input == tela::InputPolicy::exclusive, "every column keeps an actionable toggle");
     toggle->action();
