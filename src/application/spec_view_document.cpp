@@ -10,6 +10,10 @@ constexpr float max_layout_extent = 32768;     // Document layout dimension limi
 constexpr float controls_width = 280, controls_margin = 12;
 constexpr float card_padding = 6, outline_width = 1.5f, corner_radius = 6;
 constexpr float code_offset = 4, title_offset = 26;
+// Pf sizes the cards for the default 16 px theme, whose line is 24 px. The title takes the
+// rows left under the code line, so a long title wraps instead of losing everything past
+// the first break.
+constexpr float assumed_line_height = 24;
 // Pf draws the cards on a dark canvas (#1a1e2a) tinted 19% toward the group color. The overlay
 // has no canvas of its own, so it pre-blends the same result and the near-white text stays
 // readable over a light host as well as a dark one.
@@ -61,8 +65,10 @@ void declare_group(Document& document, const SpecView& view, const SpecViewGroup
         const float x = area.x + b.x * scale + card_padding;
         document.text(group_prefix(group.id) + "/code/" + card->code, card_heading(*card),
             {.width = width, .padding = 0, .positioned = true, .x = x, .y = area.y + b.y * scale + code_offset});
+        const float title_room = b.height * scale - title_offset - card_padding;
+        const unsigned title_lines = std::max(1u, static_cast<unsigned>(title_room / assumed_line_height));
         document.text(group_prefix(group.id) + "/title/" + card->code, card->title,
-            {.width = width, .padding = 0, .positioned = true, .x = x, .y = area.y + b.y * scale + title_offset});
+            {.width = width, .padding = 0, .positioned = true, .x = x, .y = area.y + b.y * scale + title_offset, .lines = title_lines});
     }
 }
 }

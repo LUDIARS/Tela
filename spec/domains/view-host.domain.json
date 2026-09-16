@@ -1,0 +1,7 @@
+{
+  "name":"view-host",
+  "description":"対象アプリを起動できないときに、宣言をTela自身の通常ウインドウ（ウインドウ／フルスクリーン）で描く。オーバーレイと違い自分の表示面と入力を所有し、内容の意味は持ち込まない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(src/infrastructure/windows/windows_view\\.cpp$|include/tela/windows_view\\.hpp$|examples/windows/view_host\\.(hpp|cpp)$|examples/windows/view_options\\.(hpp|cpp)$|tests/view_options_test\\.cpp$)"}],
+  "specRefs":["spec/feature/view-host.md","spec/contracts.md","spec/ux/product.md"]
+}

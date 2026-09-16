@@ -10,7 +10,7 @@ Iter can reuse the same C++ contracts without depending on Unity.
 |---|---|
 | `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window |
 | `Tela::Pictor` | Explicit CPU TrueType/premultiplied bitmap renderer using existing Pictor |
-| `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe |
+| `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe, and a normal top-level window that draws a declaration itself |
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
 | `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
 | `Tela::SpecView` | Read-only Pf spec view file, view fitting and per-group show/hide declarations |
@@ -23,6 +23,9 @@ toggles each layered scene ([scene overlay](spec/feature/scene-overlay.md)).
 With `--spec-view <file>` it shows a Pf specification visualization export and toggles each
 group ([spec view](spec/feature/spec-view.md)); adding `--attach probe-target` puts it on the
 separate probe window instead of waiting for Unity.
+When the target application cannot be started at all, `tela_view --font <ttf> --spec-view <file>
+[--fullscreen]` draws the same content in Tela's own window at the exported size
+([view host](spec/feature/view-host.md)).
 `--place left|right|above|below` puts the view beside that window at its own size instead of
 inside it, and `--font-size <8..96>` picks the text size for the run
 ([overlay placement](spec/feature/overlay-placement.md)).

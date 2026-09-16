@@ -137,3 +137,23 @@ loss are handled exactly as for `inside`.
 `--font-size <8..96>` sets the theme's text size for the run and scales the line height by
 the theme's existing ratio; the typeface stays the host's `--font` file. The size is a
 per-run choice because one exported file is read on hosts of very different sizes.
+
+## View host [id: SPEC-TL-VIEW-HOST]
+
+`tela_view --font <ttf> --spec-view <file>` draws a declaration in Tela's own top-level
+window instead of overlaying a host, for the case where the target application cannot be
+started. Without `--width` / `--height` the window takes the content's exported size, so it
+is read at 1:1. `--fullscreen` starts borderless on the window's monitor, F11 toggles it and
+Esc closes. `--font-size 8..96` sets the theme text size and scales the line height by the
+theme's ratio. A run without a font or without a content source fails instead of showing an
+empty window.
+
+The view owns its whole surface and all of its input, so the overlay's passthrough and
+exclusive regions do not apply and declared buttons are clickable directly. The viewport is
+the client area with the window's DPI, and is only rebuilt when size, DPI, visibility or
+focus changed. Unchanged declarations present no frame, a hidden or minimized window draws
+nothing, and closing releases presentation and input ownership exactly as a lost host does.
+
+`Layout::lines` is the number of text rows a box reserves (1 by default, at most 64). The
+renderer wraps inside the box width, so a single row silently drops everything past the
+first break; a caller that wants wrapped text declares the rows it needs.

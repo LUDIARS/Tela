@@ -24,6 +24,9 @@ struct Layout {
     Flow flow{Flow::column};
     bool positioned{};
     float x{}, y{};
+    // Text rows the box reserves. The renderer wraps inside the width, so a single row
+    // silently drops the rest; raising this is how a caller asks for wrapped text.
+    unsigned lines{1};
     bool operator==(const Layout&) const = default;
 };
 struct Color {
