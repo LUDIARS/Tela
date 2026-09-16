@@ -10,7 +10,18 @@ constexpr float max_layout_extent = 32768;     // Document layout dimension limi
 constexpr float controls_width = 280, controls_margin = 12;
 constexpr float card_padding = 6, outline_width = 1.5f, corner_radius = 6;
 constexpr float code_offset = 4, title_offset = 26;
-constexpr unsigned char fill_alpha = 48;
+// Pf draws the cards on a dark canvas (#1a1e2a) tinted 19% toward the group color. The overlay
+// has no canvas of its own, so it pre-blends the same result and the near-white text stays
+// readable over a light host as well as a dark one.
+constexpr Color canvas_base{26, 31, 42, 235};
+constexpr float accent_mix = 0.19f;
+constexpr unsigned char mix_channel(unsigned char base, unsigned char accent) {
+    return static_cast<unsigned char>(base + (accent - base) * accent_mix + 0.5f);
+}
+constexpr Color card_fill(Color accent) {
+    return {mix_channel(canvas_base.r, accent.r), mix_channel(canvas_base.g, accent.g),
+            mix_channel(canvas_base.b, accent.b), canvas_base.a};
+}
 // Groups are told apart by outline color; the palette repeats beyond six groups.
 // Kept in the same order as Pf's SPEC_VIEW_PALETTE so both views draw the same picture.
 constexpr std::array<Color, 6> palette{{
@@ -39,7 +50,7 @@ void declare_group(Document& document, const SpecView& view, const SpecViewGroup
         for(std::size_t index = start; index < end; ++index) {
             const auto& b = members[index]->bounds;
             drawing.rectangle({b.x * scale, b.y * scale, b.width * scale, b.height * scale},
-                {color.r, color.g, color.b, fill_alpha}, {color, outline_width}, corner_radius);
+                card_fill(color), {color, outline_width}, corner_radius);
         }
         document.canvas(group_prefix(group.id) + "/shapes/" + std::to_string(start / shapes_per_canvas),
             std::move(drawing), canvas_layout);

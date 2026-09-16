@@ -114,7 +114,9 @@ Tela only reads the file; Pf remains the source of truth.
 
 The view is fitted into the logical viewport, keeping its aspect ratio and centered.
 Visible groups declare outlined cards with a code line (`code status vN`) and a title line,
-both with passthrough input. Every group keeps an exclusive toggle button. A toggle changes
-session state only and is never written back. Unchanged declaration inputs are not
+both with passthrough input. The card fill pre-blends Pf's dark canvas with the group color
+at the same ratio Pf uses, so the near-white text reads over a light host as well as a dark
+one; the outline keeps the group color. Every group keeps an exclusive toggle button. A toggle
+changes session state only and is never written back. Unchanged declaration inputs are not
 redeclared, and a hidden host declares nothing. The group palette matches Pf's
 `SPEC_VIEW_PALETTE`, so the Pf screen and the Tela overlay draw the same picture.

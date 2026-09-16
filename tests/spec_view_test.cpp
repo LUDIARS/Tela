@@ -75,7 +75,11 @@ void composition(const std::filesystem::path& path) {
     require(code->layout.x == 30 && code->layout.y == 60, "card text uses fitted logical coordinates");
     const auto* title = find(document, "spec-view/group/draft/title/TL-A");
     require(title != nullptr && title->label == "Overlay \"core\"" && title->layout.y == 82, "cards declare their title below the code");
-    require(find(document, "spec-view/group/draft/shapes/0") != nullptr, "cards are drawn as one chunked canvas");
+    const auto* shapes = find(document, "spec-view/group/draft/shapes/0");
+    require(shapes != nullptr && shapes->drawing.shapes().size() == 1, "cards are drawn as one chunked canvas");
+    require(shapes->drawing.shapes()[0].fill == tela::Color{44, 63, 82, 235},
+        "cards pre-blend Pf's dark canvas with the group color so the text reads on any host");
+    require(shapes->drawing.shapes()[0].stroke.color == tela::Color{120, 200, 255, 255}, "the outline keeps the group color");
     const auto* toggle = find(document, "spec-view/toggle/approved");
     require(toggle != nullptr && toggle->input == tela::InputPolicy::exclusive, "every group keeps an actionable toggle");
     toggle->action();
