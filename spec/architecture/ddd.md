@@ -15,6 +15,7 @@ are an implementation proposal, not a record of human boundary approval.
 | pictor-composition | supporting adapter | TrueType text, clipping and premultiplied pixel composition; no application actions |
 | transition-authoring | sample application | Transition identity, source/destination/condition, stable object association, validated persistence |
 | scene-overlay | application | Read-only Pf scene export: frame fitting, scenes bottom to top, per-scene visibility as session state |
+| source-view | application | Immutable source snapshot and original line identity; bounded navigation never modifies or executes source. File reading is an infrastructure adapter, document projection is pure. |
 
 Windows are display hosts, not automatically a separate business domain. UI parts
 belong to tool composition unless their own vocabulary and independent invariants

@@ -1,0 +1,8 @@
+{
+  "name": "source-view",
+  "description": "Read-only native source viewing: bounded UTF-8 input, original line identity, page navigation and target-line opening. No source modification or code execution.",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [{"pathPattern": "(^|/)(include/tela/source_view\\.hpp|src/application/source_(view|document)\\.cpp|src/infrastructure/source/source_file\\.cpp|examples/windows/source_(host|options|content)\\.(cpp|hpp)|tests/source_(view|options)_test\\.cpp)$"}],
+  "specRefs": ["spec/feature/source-view.md", "spec/ux/product.md"]
+}
