@@ -120,3 +120,20 @@ one; the outline keeps the group color. Every group keeps an exclusive toggle bu
 changes session state only and is never written back. Unchanged declaration inputs are not
 redeclared, and a hidden host declares nothing. The group palette matches Pf's
 `SPEC_VIEW_PALETTE`, so the Pf screen and the Tela overlay draw the same picture.
+
+## Overlay placement [id: SPEC-TL-PLACEMENT]
+
+An attached session chooses where its viewport sits with `--place`
+(`inside`, `left`, `right`, `above`, `below`; `inside` is the default). `inside` uses the
+target's client area, as before. The other placements build the viewport from the content's
+own exported size and put it beside the target window, so a view larger than the host is
+read at 1:1 instead of being shrunk. A placement with no room in the monitor work area flips
+to the opposite side; when neither side fits the viewport is clamped into the work area, and
+a view larger than the work area is reduced to it. A degenerate size or work area falls back
+to the host rect. Placements other than `inside` require `--attach probe-target`, because
+through the Unity bridge the host decides the geometry. Target visibility, minimization and
+loss are handled exactly as for `inside`.
+
+`--font-size <8..96>` sets the theme's text size for the run and scales the line height by
+the theme's existing ratio; the typeface stays the host's `--font` file. The size is a
+per-run choice because one exported file is read on hosts of very different sizes.

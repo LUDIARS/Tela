@@ -1,4 +1,5 @@
 #include "overlay_session.hpp"
+#include "attached_viewport.hpp"
 #include "overlay_probe.hpp"
 #include "probe_content.hpp"
 #include "scene_overlay_content.hpp"
@@ -17,6 +18,7 @@
 // @spec Transition authoring
 // @spec Scene overlay
 // @spec Spec view
+// @spec Overlay placement
 namespace {
 using Clock=std::chrono::steady_clock;
 class OverlaySession {
@@ -27,6 +29,7 @@ private:
     void save(tela::Transition value);
     void add(const tela::Anchor& anchor);
     void rebuildDocument();
+    void applyTheme();
     HWND findProbeTarget();
     void startProbe();
     void attachTarget();
@@ -48,6 +51,8 @@ private:
     std::unique_ptr<SpecViewContent> specContent_;
     std::unique_ptr<tela::WindowsOverlay> overlay_;
     std::unique_ptr<tela::WindowsPipe> pipe_;
+    // The read-only content's own size, used when the viewport sits outside the host.
+    tela::Rect contentBounds_{};
     HWND target_{};
     int clicks_{};
     ProbeContent probeContent_;
@@ -57,13 +62,27 @@ private:
     Clock::time_point started_{Clock::now()};
 };
 OverlaySession::OverlaySession(const Options& config) : config_(config),renderer_(config.font),bridge_(runtime_) {
+    applyTheme();
     if(config_.probe) { startProbe(); return; }
-    if(!config_.specView.empty()) specContent_=std::make_unique<SpecViewContent>(config_.specView);
-    else if(!config_.sceneOverlay.empty()) sceneContent_=std::make_unique<SceneOverlayContent>(config_.sceneOverlay);
-    else if(std::filesystem::exists(config_.file)) data_.load(config_.file);
+    if(!config_.specView.empty()) {
+        specContent_=std::make_unique<SpecViewContent>(config_.specView);
+        contentBounds_=specContent_->natural_bounds();
+    } else if(!config_.sceneOverlay.empty()) {
+        sceneContent_=std::make_unique<SceneOverlayContent>(config_.sceneOverlay);
+        contentBounds_=sceneContent_->natural_bounds();
+    } else if(std::filesystem::exists(config_.file)) data_.load(config_.file);
     // A read-only view can sit on the separate probe target window instead of waiting for Unity.
     if(config_.attachProbeTarget) { attachTarget(); return; }
     pipe_=std::make_unique<tela::WindowsPipe>(config_.pipe);
+}
+void OverlaySession::applyTheme() {
+    if(!config_.fontSize) return;
+    auto theme=runtime_.theme();
+    const float size=static_cast<float>(config_.fontSize);
+    // The default theme pairs 16 px text with a 24 px line; keep that ratio at any size.
+    theme.line_height=size*(theme.font_size>0?theme.line_height/theme.font_size:1.5f);
+    theme.font_size=size;
+    runtime_.theme(theme);
 }
 void OverlaySession::save(tela::Transition value) {
     auto next=data_; next.set(std::move(value)); next.save(config_.file);
@@ -98,7 +117,8 @@ void OverlaySession::startProbe() {
 }
 void OverlaySession::attachTarget() {
     target_=findProbeTarget();
-    synchronizeProbe(runtime_,target_); rebuildDocument();
+    synchronizeAttached(runtime_,target_,config_.placement,contentBounds_.width,contentBounds_.height);
+    rebuildDocument();
     overlay_=std::make_unique<tela::WindowsOverlay>(runtime_,renderer_,reinterpret_cast<std::uintptr_t>(target_));
 }
 bool OverlaySession::pumpMessages() {
@@ -120,7 +140,7 @@ bool OverlaySession::updateProbe() {
     if(config_.probe) return probeContent_.refresh_from_target(runtime_,reinterpret_cast<std::uintptr_t>(target_),clicks_);
     if(!target_) return true;
     // Attached content tracks the same standalone window but keeps its own declaration.
-    synchronizeProbe(runtime_,target_);
+    synchronizeAttached(runtime_,target_,config_.placement,contentBounds_.width,contentBounds_.height);
     return IsWindow(target_)!=FALSE;
 }
 void OverlaySession::disconnect() {

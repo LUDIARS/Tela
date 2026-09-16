@@ -4,7 +4,7 @@ add_library(tela_core src/domain/composition/document.cpp src/domain/composition
   src/domain/composition/drawing.cpp src/domain/composition/callout.cpp
   src/application/runtime.cpp src/domain/input/input_regions.cpp src/domain/input/gesture_ownership.cpp
   src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp
-  src/domain/overlay/presentation_status.cpp)
+  src/domain/overlay/presentation_status.cpp src/domain/overlay/placement.cpp)
 add_library(Tela::Core ALIAS tela_core)
 include(GNUInstallDirs)
 target_include_directories(tela_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -77,7 +77,8 @@ if(TELA_BUILD_WINDOWS)
     examples/windows/overlay_options.cpp examples/windows/overlay_probe.cpp
     examples/windows/probe_content.cpp examples/windows/probe_controls.cpp
     examples/windows/overlay_diagnostics.cpp examples/windows/overlay_session.cpp
-    examples/windows/scene_overlay_content.cpp examples/windows/spec_view_content.cpp)
+    examples/windows/scene_overlay_content.cpp examples/windows/spec_view_content.cpp
+    examples/windows/attached_viewport.cpp)
   target_link_libraries(tela_overlay PRIVATE Tela::Windows Tela::Transitions Tela::SceneOverlay Tela::SpecView)
   target_compile_definitions(tela_overlay PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
   add_executable(tela_probe_target examples/windows/probe_target.cpp)
@@ -105,6 +106,9 @@ if(BUILD_TESTING)
   add_executable(tela_callout_tests tests/callout_test.cpp)
   target_link_libraries(tela_callout_tests PRIVATE Tela::Core)
   add_test(NAME tela_callout_contract COMMAND tela_callout_tests)
+  add_executable(tela_placement_tests tests/placement_test.cpp)
+  target_link_libraries(tela_placement_tests PRIVATE Tela::Core)
+  add_test(NAME tela_placement_contract COMMAND tela_placement_tests)
   add_executable(tela_presentation_tests tests/presentation_test.cpp)
   target_link_libraries(tela_presentation_tests PRIVATE Tela::Core)
   add_test(NAME tela_presentation_reasons COMMAND tela_presentation_tests)

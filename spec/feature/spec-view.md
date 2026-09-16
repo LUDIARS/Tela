@@ -9,6 +9,8 @@ SPEC-TL-SPEC-VIEW。Pf（Praeforma）の仕様書可視化ビューで作った�
 1. Pf の仕様タブ「可視化」で軸（状態・分類・優先度）と各グループの表示を決め、「この図を Tela 用に書き出す」でファイルを保存する。その時点の表示・非表示が初期表示になる。
 2. `tela_overlay --font <file.ttf> --spec-view <file>` を Excubitor 経由で起動する。Unity の Scene ビューに重ねる場合は Tools/Tela から接続する。
 3. Unity を使わずに単体で見る場合は `tela-probe-target` を先に起動し、`--attach probe-target` を足して起動する。
+   カードを対象ウインドウの隣に等倍で置くときは `--place right` などを足す
+   （[overlay placement](overlay-placement.md)）。文字の大きさは `--font-size` で選ぶ。
 4. 左上のボタン（ON/OFF とグループ名）でグループごとに表示を切り替える。切り替えは起動中だけで、ファイルや Pf へは書き戻さない。
 
 `--spec-view` は `--probe` / `--transitions` / `--scene-overlay` と同時に指定できない。

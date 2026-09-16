@@ -18,11 +18,11 @@ void write(const std::filesystem::path& path, const std::string& text) {
 // The group names are the UTF-8 labels Pf writes for the status axis.
 const char* const exported =
     "TELA_SPEC_VIEW 1\n"
-    "view \"Tela\" \"0.0.3\" 1136 332\n"
+    "view \"Tela\" \"0.0.3\" 1220 332\n"
     "group \"draft\" \"\xe4\xb8\x8b\xe6\x9b\xb8\xe3\x81\x8d\" 1\n"
     "group \"approved\" \"\xe7\xa2\xba\xe5\xae\x9a\" 1\n"
-    "card \"draft\" \"TL-A\" \"Overlay \\\"core\\\"\" \"draft\" 2 24 56 260 96\n"
-    "card \"approved\" \"TL-B\" \"Bridge\\\\IPC\" \"approved\" 1 24 212 260 96\n";
+    "card \"draft\" \"TL-A\" \"Overlay \\\"core\\\"\" \"draft\" 2 24 56 380 96\n"
+    "card \"approved\" \"TL-B\" \"Bridge\\\\IPC\" \"approved\" 1 24 212 380 96\n";
 
 const tela::Element* find(const tela::Document& document, const std::string& id) {
     const auto& elements = document.elements();
@@ -33,14 +33,14 @@ const tela::Element* find(const tela::Document& document, const std::string& id)
 void loading(const std::filesystem::path& path) {
     write(path, exported);
     const auto view = tela::load_spec_view(path);
-    require(view.info() == tela::SpecViewInfo{"Tela", "0.0.3", 1136, 332}, "view header is read");
+    require(view.info() == tela::SpecViewInfo{"Tela", "0.0.3", 1220, 332}, "view header is read");
     require(view.groups().size() == 2, "groups are read in order");
     require(view.groups()[0].id == "draft" && view.groups()[1].id == "approved", "group order is preserved");
     require(view.groups()[0].visible && view.groups()[1].visible, "initial visibility is read");
     require(view.cards().size() == 2, "cards are read");
     require(view.cards()[0].title == "Overlay \"core\"" && view.cards()[1].title == "Bridge\\IPC", "quoted titles are unescaped");
     require(view.cards()[0].version == 2 && view.cards()[1].status == "approved", "card version and status are read");
-    require(view.cards()[1].bounds == tela::Rect{24, 212, 260, 96}, "card bounds are read");
+    require(view.cards()[1].bounds == tela::Rect{24, 212, 380, 96}, "card bounds are read");
     for(const char* broken : {
         "TELA_SPEC_VIEW 9\nview \"P\" \"1\" 10 10\ngroup \"a\" \"A\" 1\n",
         "TELA_SPEC_VIEW 1\ngroup \"a\" \"A\" 1\n",
@@ -67,7 +67,7 @@ void composition(const std::filesystem::path& path) {
     auto view = tela::load_spec_view(path);
     require(tela::spec_view_area({"P", "1", 1000, 500}, {0, 0, 500, 500}) == tela::Rect{0, 125, 500, 250},
         "view fits the viewport keeping its aspect ratio");
-    const tela::Viewport viewport{"host", "view", 1, 0, 0, 1136, 332, 1, true, true}; // 1:1 logical
+    const tela::Viewport viewport{"host", "view", 1, 0, 0, 1220, 332, 1, true, true}; // 1:1 logical
     std::string toggled;
     const auto document = tela::spec_view_document(view, viewport, [&](const std::string& id) { toggled = id; });
     const auto* code = find(document, "spec-view/group/draft/code/TL-A");

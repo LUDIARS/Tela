@@ -11,6 +11,9 @@ class SceneOverlayContent {
 public:
     explicit SceneOverlayContent(const std::string& path);
     void refresh(tela::Runtime& runtime);
+    // The exported frame has its own size; placements outside the host draw it at that size.
+    // @implements SPEC-TL-PLACEMENT
+    tela::Rect natural_bounds() const noexcept { return {0, 0, overlay_.frame().width, overlay_.frame().height}; }
 private:
     void toggle(const std::string& scene_id);
     // Keyed on declaration inputs rather than the viewport revision, which resets on disconnect.

@@ -1,17 +1,20 @@
 {
   "name": "host-overlay",
-  "description": "作業対象に表示を追従させ、対象を見られない間は表示と更新を止める。ウインドウは表示先の実装であり、UX上の境界は対象とツール表示の対応・寿命に置く。",
+  "description": "作業対象に表示を追従させ、対象を見られない間は表示と更新を止める。表示を対象の内側に置くか隣に置くかもこの責務に含む。ウインドウは表示先の実装であり、UX上の境界は対象とツール表示の対応・寿命に置く。",
   "presetRules": [],
   "templateRules": [],
   "membership": [
     {
-      "pathPattern": "(^|/)(src/domain/overlay/|src/infrastructure/windows/(windows_overlay|layered_bitmap)\\.(cpp|hpp)$|include/tela/(windows_overlay|presentation_status)\\.hpp$|tests/presentation_test\\.cpp$)"
+      "pathPattern": "(^|/)(src/domain/overlay/|src/infrastructure/windows/(windows_overlay|layered_bitmap)\\.(cpp|hpp)$|include/tela/(windows_overlay|presentation_status|placement)\\.hpp$|tests/(presentation|placement)_test\\.cpp$)"
     },
     {
       "pathPattern": "(^|/)(examples/windows/probe_content\\.(cpp|hpp)$|tests/probe_content_test\\.cpp$)"
     },
     {
       "pathPattern": "(^|/)examples/windows/probe_controls\\.(cpp|hpp)$"
+    },
+    {
+      "pathPattern": "(^|/)examples/windows/attached_viewport\\.(cpp|hpp)$"
     },
     {
       "pathPattern": "(^|/)(src/infrastructure/macos/|include/tela/macos_overlay\\.hpp$|examples/macos/)"
@@ -21,6 +24,7 @@
     "spec/ux/host-overlay.md",
     "spec/windows-composition.md",
     "spec/architecture/ddd.md",
-    "spec/macos-composition.md"
+    "spec/macos-composition.md",
+    "spec/feature/overlay-placement.md"
   ]
 }

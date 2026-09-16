@@ -1,6 +1,8 @@
 #pragma once
+#include <tela/placement.hpp>
 #include <string>
 // @spec Overlay lifecycle
 // @spec Spec view
-struct Options {std::string font,pipe="tela-scene",file="transitions.tela",sceneOverlay,specView,report;bool probe{},transitionsGiven{},attachProbeTarget{};int seconds{};};
+// @spec Overlay placement
+struct Options {std::string font,pipe="tela-scene",file="transitions.tela",sceneOverlay,specView,report;bool probe{},transitionsGiven{},attachProbeTarget{};int seconds{},fontSize{};tela::Placement placement{tela::Placement::inside};};
 Options options(int argc, char** argv);

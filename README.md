@@ -8,7 +8,7 @@ Iter can reuse the same C++ contracts without depending on Unity.
 
 | Target | Responsibility |
 |---|---|
-| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts |
+| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window |
 | `Tela::Pictor` | Explicit CPU TrueType/premultiplied bitmap renderer using existing Pictor |
 | `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe |
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
@@ -23,6 +23,9 @@ toggles each layered scene ([scene overlay](spec/feature/scene-overlay.md)).
 With `--spec-view <file>` it shows a Pf specification visualization export and toggles each
 group ([spec view](spec/feature/spec-view.md)); adding `--attach probe-target` puts it on the
 separate probe window instead of waiting for Unity.
+`--place left|right|above|below` puts the view beside that window at its own size instead of
+inside it, and `--font-size <8..96>` picks the text size for the run
+([overlay placement](spec/feature/overlay-placement.md)).
 The wire format and the transition file are versioned, bounded UTF-8 formats.
 
 C++ library/executable builds, four library contract tests and Unity 6 reference
