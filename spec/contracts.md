@@ -101,6 +101,26 @@ host declares nothing.
 
 ## Spec view [id: SPEC-TL-SPEC-VIEW]
 
+### Readable fitted cards (2026-09-17)
+
+UX-TL-W2/W5: the user must keep the selected specification and its title visible while
+resizing the view. The spec-view application owns the fitted picture and toggle state;
+the composition domain owns text metrics, and the Pictor adapter only rasterizes them.
+Controls occupy a separate left-hand strip, never the exported picture. Its width is
+at most 280 logical pixels or 35% of the viewport. When all 32 groups cannot fit at
+normal size, the strip's rows and text shrink together to remain reachable. The rest
+of the viewport fits the unchanged Pf picture uniformly, with an upper scale of 64.
+This does not change Pf's relative card layout. Small host windows can make text too
+small to read; enlarging the window restores it without changing visibility state.
+
+`Layout::text_scale` is a finite multiplier in (0,64], default 1. Text rasterization
+and automatic row height apply it once, before host DPI. Explicit heights still win.
+Spec cards scale padding, offsets and text together. Title height is bounded by the
+card; titles wrap into up to three complete theme lines, with remaining text clipped
+at the box boundary (no ellipsis). `--font-size` sets the theme at picture scale 1.
+Theme changes invalidate the spec declaration. These rules are identical for native
+views and Unity overlays. The source Pf data and other declarations are unchanged.
+
 Pf exports its specification visualization as `TELA_SPEC_VIEW 1`: LF lines, no BOM, then
 `view "project" "version" width height`, `group "id" "name" visible` (0 or 1, in the axis'
 fixed order) and `card "group id" "code" "title" "status" version x y width height` in the

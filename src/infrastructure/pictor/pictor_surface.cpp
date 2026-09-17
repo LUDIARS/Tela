@@ -57,7 +57,7 @@ PixelSurface PictorSurface::render(const Runtime& runtime) {
         const int height = std::min(view.height,std::max(0,static_cast<int>(bounds.height-2*padding)));
         if (!width || !height) continue;
         pictor::TextStyle style;
-        style.font_size = theme.font_size*view.dpi_scale;
+        style.font_size = theme.font_size*e.layout.text_scale*view.dpi_scale;
         style.color = {theme.text.r/255.f,theme.text.g/255.f,theme.text.b/255.f,theme.text.a/255.f};
         style.align_v = pictor::TextAlignV::TOP;
         style.max_width = static_cast<float>(width);

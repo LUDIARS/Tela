@@ -13,6 +13,14 @@ internal static class BridgeContracts
     {
         try
         {
+            LocalPipeName.Validate("tela-scene");
+            foreach (var invalid in new[] { "", ".", "../pipe", "\\\\host\\pipe", new string('a', 129) })
+            {
+                bool rejected = false;
+                try { LocalPipeName.Validate(invalid); }
+                catch (ArgumentException) { rejected = true; }
+                Require(rejected, "Invalid pipe name rejected before changing connection");
+            }
             var scene = new IntPtr(10); var bridgeWindow = new IntPtr(20);
             Require(!SceneHostBinding.CanBind(false, bridgeWindow), "Floating bridge must not bind as Scene");
             Require(!SceneHostBinding.CanBind(true, IntPtr.Zero), "Foreign foreground cannot bind");

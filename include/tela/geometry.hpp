@@ -27,6 +27,7 @@ struct Layout {
     // Text rows the box reserves. The renderer wraps inside the width, so a single row
     // silently drops the rest; raising this is how a caller asks for wrapped text.
     unsigned lines{1};
+    float text_scale{1}; // Content zoom, independent of the host's DPI.
     bool operator==(const Layout&) const = default;
 };
 struct Color {

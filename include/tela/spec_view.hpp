@@ -54,5 +54,5 @@ Rect spec_view_area(const SpecViewInfo&, Rect available);
 
 // Visible groups draw outlined cards with their code and title; every group keeps a toggle button.
 Document spec_view_document(const SpecView&, const Viewport&,
-    std::function<void(const std::string& group_id)> toggle);
+    std::function<void(const std::string& group_id)> toggle, const Theme& theme = {});
 }

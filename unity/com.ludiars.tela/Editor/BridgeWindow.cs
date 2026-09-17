@@ -14,8 +14,8 @@ namespace Tela.Editor
         {
             pipeName = EditorGUILayout.TextField("Local pipe",pipeName);
             EditorGUILayout.HelpBox(SceneBridge.Status,MessageType.Info);
-            if (GUILayout.Button("Connect active Scene view")) SceneBridge.Connect(pipeName);
-            if (GUILayout.Button("Disconnect")) SceneBridge.Disconnect();
+            if (GUILayout.Button("Connect active Scene view")) SceneOverlayConnection.Connect(pipeName);
+            if (GUILayout.Button("Disconnect")) SceneOverlayConnection.Disconnect();
         }
     }
 }

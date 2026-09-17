@@ -50,3 +50,14 @@ again and establishes a new generation. Selection IDs use Unity GlobalObjectId.
 
 Unity never sends native draw commands. Orbis and Iter can implement this same
 protocol or link `Tela::Core`/`Tela::Windows` directly without a Unity dependency.
+
+## Editor connection API
+
+`Tela.Editor.SceneOverlayConnection` exposes `Connect(localPipe)`, `Disconnect()`
+and read-only `Status` to optional Editor adapters such as Praeforma. It delegates
+to the existing Scene bridge and preserves its one-connection ownership and reload /
+quit cleanup. Invalid pipe names are rejected before disconnecting an existing
+connection. Names are nonempty local pipe identifiers of at most 128 characters;
+letters, digits, dash, underscore and dot are accepted (except a lone dot).
+The adapter never launches the native process or interprets specification/instruction
+text. Native startup remains an Excubitor operation from the main checkout.

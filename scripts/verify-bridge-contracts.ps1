@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$EditorData)
+param([Parameter(Mandatory=$true)][string]$EditorData, [switch]$CompileOnly)
 $ErrorActionPreference = 'Stop'
 $u = [Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = $u
@@ -14,9 +14,11 @@ $assemblies = @('System.Private.CoreLib', 'System.Runtime', 'System.Console', 'S
     'System.Runtime.InteropServices', 'System.ComponentModel.Primitives')
 $refs = $assemblies | ForEach-Object { '/r:' + (Join-Path $framework.FullName ($_.ToString() + '.dll')) }
 $sources = @('tests/unity/BridgeContracts.cs', 'unity/com.ludiars.tela/Editor/SceneHostBinding.cs',
-    'unity/com.ludiars.tela/Editor/SceneActivity.cs', 'unity/com.ludiars.tela/Editor/PipeConnection.cs')
+    'unity/com.ludiars.tela/Editor/SceneActivity.cs', 'unity/com.ludiars.tela/Editor/PipeConnection.cs',
+    'unity/com.ludiars.tela/Editor/LocalPipeName.cs')
 & $runtime $compiler /nologo /target:exe /nostdlib+ /out:build-unity/Tela.BridgeContracts.dll $refs $sources
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+if ($CompileOnly) { exit 0 }
 $config = @{ runtimeOptions = @{ tfm = 'net6.0'; framework = @{ name = 'Microsoft.NETCore.App'; version = $framework.Name } } } | ConvertTo-Json -Depth 4
 [IO.File]::WriteAllText((Join-Path $PWD 'build-unity/Tela.BridgeContracts.runtimeconfig.json'), $config, $u)
 # Pure contracts only: no Unity Editor, native overlay, or listening server is launched.

@@ -22,6 +22,7 @@ private:
         float dpi_scale;
         bool visible;
         std::uint64_t toggles;
+        tela::Theme theme;
         bool operator==(const Revision&) const = default;
     };
     tela::SpecView view_;

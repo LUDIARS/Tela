@@ -19,7 +19,7 @@ private:
     std::vector<PlacedElement> result;
     float naturalHeight(const Element& e) {
         if (e.layout.height) return e.layout.height;
-        if (e.kind != ElementKind::panel) return theme.line_height*std::max(1u,e.layout.lines) + 2*e.layout.padding;
+        if (e.kind != ElementKind::panel) return theme.line_height*e.layout.text_scale*std::max(1u,e.layout.lines) + 2*e.layout.padding;
         float height = 0; unsigned count = 0;
         for (auto child : children[e.id]) {
             if (child->layout.positioned) continue;

@@ -16,6 +16,14 @@ tela::HostPointerEvent event(std::uint64_t sequence,tela::PointerPhase phase,int
 }
 }
 int main(){try{
+    tela::Document zoom;
+    zoom.text("zoom", "Two rows", {.padding=0,.lines=2,.text_scale=2});
+    const auto zoomed=tela::arrange(zoom,400,400,{});
+    require(zoomed[0].bounds.height==96,"automatic row height follows text zoom");
+    for(float invalid : {0.f,-1.f,65.f}) {
+        try {tela::Document bad;bad.text("bad","",{.text_scale=invalid});throw std::logic_error("invalid scale accepted");}
+        catch(const std::invalid_argument&) {}
+    }
     tela::Runtime r;r.viewport({"host","view",1,0,0,300,200,1,true,true});
     int old=0,current=0;
     tela::Document first;first.button("stable","Old",[&]{++old;},{.width=100});r.document(std::move(first));

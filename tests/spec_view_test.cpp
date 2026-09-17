@@ -3,6 +3,7 @@
 #include <tela/spec_view.hpp>
 #include <tela/runtime.hpp>
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -67,14 +68,15 @@ void composition(const std::filesystem::path& path) {
     auto view = tela::load_spec_view(path);
     require(tela::spec_view_area({"P", "1", 1000, 500}, {0, 0, 500, 500}) == tela::Rect{0, 125, 500, 250},
         "view fits the viewport keeping its aspect ratio");
-    const tela::Viewport viewport{"host", "view", 1, 0, 0, 1220, 332, 1, true, true}; // 1:1 logical
+    const tela::Viewport viewport{"host", "view", 1, 0, 0, 1500, 332, 1, true, true}; // picture 1:1 plus controls
     std::string toggled;
     const auto document = tela::spec_view_document(view, viewport, [&](const std::string& id) { toggled = id; });
     const auto* code = find(document, "spec-view/group/draft/code/TL-A");
     require(code != nullptr && code->label == "TL-A draft v2", "cards declare their code, status and version");
-    require(code->layout.x == 30 && code->layout.y == 60, "card text uses fitted logical coordinates");
+    require(code->layout.x == 310 && code->layout.y == 60, "card text uses fitted coordinates outside controls");
     const auto* title = find(document, "spec-view/group/draft/title/TL-A");
-    require(title != nullptr && title->label == "Overlay \"core\"" && title->layout.y == 82, "cards declare their title below the code");
+    require(title != nullptr && title->label == "Overlay \"core\"" && title->layout.y == 84, "title starts after a complete code line");
+    require(title->layout.lines == 2 && title->layout.height == 48, "title wraps within the card's remaining full lines");
     const auto* shapes = find(document, "spec-view/group/draft/shapes/0");
     require(shapes != nullptr && shapes->drawing.shapes().size() == 1, "cards are drawn as one chunked canvas");
     require(shapes->drawing.shapes()[0].fill == tela::Color{44, 63, 82, 235},
@@ -116,6 +118,39 @@ void limits() {
         throw std::logic_error("empty group list accepted");
     } catch(const std::invalid_argument&) {}
 }
+
+void readable_views() {
+    for(const unsigned count : {1u, 32u}) {
+        std::vector<tela::SpecViewGroup> groups;
+        for(unsigned i = 0; i < count; ++i) groups.push_back({std::to_string(i), "Group", true});
+        tela::SpecView view({"P", "1", 1000, 500}, groups,
+            {{"0", "A", "A long specification title", "draft", 1, {0, 0, 380, 120}}});
+        for(const int width : {500, 1280, 3280}) {
+            tela::Runtime runtime;
+            runtime.viewport({"host", "view", 1, 0, 0, width, 1500, 1, true, true});
+            const auto document = tela::spec_view_document(view, runtime.viewport(), {});
+            const auto* code = find(document, "spec-view/group/0/code/A");
+            const auto* title = find(document, "spec-view/group/0/title/A");
+            require(code && title, "card text remains declared at all zoom levels");
+            const float scale = (width - std::min(280.f, width * .35f)) / 1000;
+            require(std::abs(code->layout.text_scale - scale) < .0001f, "font follows picture zoom");
+            require(std::abs(title->layout.height - 72 * scale) < .001f, "three title rows follow zoom");
+            runtime.document(document);
+            const auto& placed = runtime.elements();
+            const auto panel = std::find_if(placed.begin(), placed.end(), [](const auto& p) {return p.element.id == "spec-view/controls";});
+            for(const auto& p : placed) {
+                if(p.element.id.starts_with("spec-view/group/"))
+                    require(tela::intersect(panel->bounds, p.bounds).width == 0, "controls never cover the picture");
+                if(p.element.kind == tela::ElementKind::button)
+                    require(p.clip.width > 0 && std::abs(p.clip.height - p.bounds.height) < .001f,
+                        "all 32 controls remain inside the host");
+            }
+            runtime.frame_presented();
+            runtime.document(tela::spec_view_document(view, runtime.viewport(), {}));
+            require(!runtime.needs_frame(), "fitted view remains idle when unchanged");
+        }
+    }
+}
 }
 
 int main(int argc, char** argv) {
@@ -125,6 +160,7 @@ int main(int argc, char** argv) {
         loading(path);
         composition(path);
         limits();
+        readable_views();
         std::filesystem::remove(path);
         return 0;
     } catch(const std::exception& e) {

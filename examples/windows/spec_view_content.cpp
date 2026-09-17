@@ -14,8 +14,8 @@ void SpecViewContent::toggle(const std::string& group_id) {
 
 void SpecViewContent::refresh(tela::Runtime& runtime) {
     const auto& viewport = runtime.viewport();
-    const Revision revision{viewport.width, viewport.height, viewport.dpi_scale, viewport.visible, toggles_};
+    const Revision revision{viewport.width, viewport.height, viewport.dpi_scale, viewport.visible, toggles_, runtime.theme()};
     if(declared_ == revision) return;
-    runtime.document(tela::spec_view_document(view_, viewport, [this](const std::string& id) { toggle(id); }));
+    runtime.document(tela::spec_view_document(view_, viewport, [this](const std::string& id) { toggle(id); }, runtime.theme()));
     declared_ = revision;
 }

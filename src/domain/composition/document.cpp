@@ -17,6 +17,8 @@ void Document::append(const std::string& id, ElementKind kind,
         throw std::invalid_argument("Invalid Tela layout position");
     if (layout.lines < 1 || layout.lines > 64)
         throw std::invalid_argument("Tela text rows must be 1..64");
+    if (!std::isfinite(layout.text_scale) || layout.text_scale <= 0 || layout.text_scale > 64)
+        throw std::invalid_argument("Tela text scale must be finite and in (0,64]");
     if (elements_.size() >= 4096 || id.size() > 512 || label.size() > 16384)
         throw std::invalid_argument("Tela document limit exceeded");
     if (id.empty() || std::any_of(elements_.begin(), elements_.end(),
