@@ -2,9 +2,9 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include "native_pointer.hpp"
 #include <tela/windows_view.hpp>
 #include <windows.h>
-#include <windowsx.h>
 #include <cstring>
 #include <stdexcept>
 
@@ -29,7 +29,7 @@ struct WindowsView::Impl {
     bool closed{}, presented{}, borderless{};
     WINDOWPLACEMENT restore{sizeof(WINDOWPLACEMENT)};
     LONG_PTR restore_style{};
-    std::uint64_t sequence{}, gesture{};
+    windows::NativePointer pointer;
 
     Impl(Runtime& r, PictorSurface& p, const std::string& title, int width, int height, bool start_fullscreen)
         : runtime(r), renderer(p) {
@@ -79,26 +79,9 @@ struct WindowsView::Impl {
             if(wp == VK_ESCAPE) { DestroyWindow(w); return 0; }
             if(wp == VK_F11) { set_fullscreen(!borderless); return 0; }
             return 0;
-        case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_MOUSEMOVE: return pointer(w, m, lp);
+        case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_MOUSEMOVE: pointer.forward(runtime, w, m, lp); return 0;
         default: return DefWindowProcW(w, m, wp, lp);
         }
-    }
-    LRESULT pointer(HWND w, UINT m, LPARAM lp) {
-        POINT position{GET_X_LPARAM(lp), GET_Y_LPARAM(lp)};
-        ClientToScreen(w, &position);
-        if(m == WM_LBUTTONDOWN) ++gesture;
-        HostPointerEvent event;
-        event.sequence = ++sequence;
-        event.viewport_revision = runtime.viewport().revision;
-        event.gesture_id = gesture;
-        event.phase = m == WM_LBUTTONDOWN ? PointerPhase::down : m == WM_LBUTTONUP ? PointerPhase::up : PointerPhase::move;
-        event.button = m == WM_MOUSEMOVE ? PointerButton::none : PointerButton::primary;
-        event.desktop_x = position.x;
-        event.desktop_y = position.y;
-        runtime.pointer(event, InputSource::native);
-        if(m == WM_LBUTTONDOWN && runtime.captured()) SetCapture(w);
-        if(m == WM_LBUTTONUP && GetCapture() == w) ReleaseCapture();
-        return 0;
     }
     void set_fullscreen(bool wanted) {
         if(!window || wanted == borderless) return;

@@ -178,6 +178,43 @@ nothing, and closing releases presentation and input ownership exactly as a lost
 renderer wraps inside the box width, so a single row silently drops everything past the
 first break; a caller that wants wrapped text declares the rows it needs.
 
+## Desktop overlay [id: SPEC-TL-DESKTOP-OVERLAY]
+
+`WindowsDesktopOverlay` presents a declaration on the desktop without a target window. Its
+windows are topmost, never activated, unowned tool windows, so they appear in neither the taskbar
+nor Alt+Tab. It shows and takes input through the same layered composition as the attached
+overlay: one passthrough visual window plus one input window per exclusive region, clipped to
+that region's fragments. Everything else passes input through to the windows below. The renderer's
+premultiplied bitmap is presented as is: translucency comes from the declaration's own colours
+(for example a rounded canvas rectangle with an alpha fill), never from a surface-wide setting.
+
+Placement is the caller's. A `DesktopPlacement` gives a logical size and either a corner of the
+primary monitor's work area with logical margins, or an absolute top-left in desktop physical
+pixels. Logical values are converted with the DPI of the monitor the surface lands on (Per-Monitor
+V2, independent of the process default). An absolute surface belongs to the monitor whose work area
+holds the largest share of it when sized with that monitor's DPI; equal shares prefer the primary,
+then the order the monitors were listed in. The surface is clamped into that work area. When no
+monitor holds any of it, it returns to the same corner of the primary monitor with the same margins
+and the frame is marked recovered. A surface larger than the work area is reduced to it. Monitors
+with no area or a DPI scale outside 0.25..8 are ignored. A size that is not positive and at most
+16384 logical pixels, a margin that is not finite and non-negative, or no usable monitor is rejected
+with `std::invalid_argument`.
+
+The element named as the grip moves the surface: dragging its exclusive region moves every window
+together without presenting again, and its pointer input never reaches the runtime. On release the
+drop is clamped as above, and `placement_at` reports an absolute placement at the settled spot, with
+the corner of its monitor that the surface centre is nearest to and the logical distance to it.
+Passing that placement back restores the spot; `placement_at` of the reported spot is the reported
+placement. The report is delivered from `synchronize()`, never inside a window message; storing it
+is the caller's job. A drag whose release the grip never received ends once the primary button is up.
+
+`synchronize()` rereads monitors and DPI every call, rebuilds the viewport only when the frame
+changed, and presents only when the declaration changed or the surface was hidden. While no monitor
+can be read the surface is hidden. The viewport reports the surface as focused while shown: a surface
+that is never activated has no host focus to lose. `hovered()` names the exclusive region under the
+pointer. Destruction releases every window, capture and hit region, and the runtime loses the
+surface as it loses a host (`disconnect`).
+
 ## Graph view [id: SPEC-TL-GRAPH]
 
 Pf exports its domain relation diagram as `TELA_GRAPH 1`: LF lines, no BOM, then

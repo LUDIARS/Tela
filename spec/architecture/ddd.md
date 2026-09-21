@@ -16,6 +16,7 @@ are an implementation proposal, not a record of human boundary approval.
 | transition-authoring | sample application | Transition identity, source/destination/condition, stable object association, validated persistence |
 | scene-overlay | application | Read-only Pf scene export: frame fitting, scenes bottom to top, per-scene visibility as session state |
 | source-view | application | Immutable source snapshot and original line identity; bounded navigation never modifies or executes source. File reading is an infrastructure adapter, document projection is pure. |
+| desktop-overlay | supporting host | Surface with no target window: work-area corner or absolute placement, per-monitor DPI, return to the primary's corner, grip moves reported to the caller |
 
 Windows are display hosts, not automatically a separate business domain. UI parts
 belong to tool composition unless their own vocabulary and independent invariants

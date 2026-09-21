@@ -18,6 +18,8 @@ DDD vocabulary, context candidates and layer policy are in [DDD](architecture/dd
   must explicitly bridge text and clip semantics; it is not a cast of enum values.
 - Desktop host: window lifecycle, transparent composition, hit regions,
   focus, gesture capture, DPI, target visibility and position tracking.
+- [Desktop overlay](feature/desktop-overlay.md): the same composition floating on the
+  desktop without a target; monitor-corner placement, per-monitor DPI and grip dragging.
 - [macOS host](macos-composition.md): optional AppKit transparent panels sharing
   the Pictor CPU surface; target-window tracking and primary-pointer ownership.
   The Mac implementation requires native build and acceptance on a Mac.

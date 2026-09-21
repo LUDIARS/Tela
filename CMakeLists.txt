@@ -4,7 +4,8 @@ add_library(tela_core src/domain/composition/document.cpp src/domain/composition
   src/domain/composition/drawing.cpp src/domain/composition/callout.cpp
   src/application/runtime.cpp src/domain/input/input_regions.cpp src/domain/input/gesture_ownership.cpp
   src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp
-  src/domain/overlay/presentation_status.cpp src/domain/overlay/placement.cpp)
+  src/domain/overlay/presentation_status.cpp src/domain/overlay/placement.cpp
+  src/domain/desktop/desktop_placement.cpp)
 add_library(Tela::Core ALIAS tela_core)
 include(GNUInstallDirs)
 target_include_directories(tela_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -82,10 +83,12 @@ if(TELA_BUILD_MACOS)
 endif()
 if(TELA_BUILD_WINDOWS)
   add_library(tela_windows src/infrastructure/windows/layered_bitmap.cpp src/infrastructure/windows/windows_overlay.cpp
+    src/infrastructure/windows/layered_composition.cpp src/infrastructure/windows/native_pointer.cpp
     src/infrastructure/windows/windows_view.cpp
+    src/infrastructure/windows/desktop_monitors.cpp src/infrastructure/windows/windows_desktop_overlay.cpp
     src/infrastructure/windows/pipe_security.cpp src/infrastructure/windows/windows_pipe.cpp)
   add_library(Tela::Windows ALIAS tela_windows)
-  target_link_libraries(tela_windows PUBLIC Tela::Pictor PRIVATE user32 gdi32 advapi32)
+  target_link_libraries(tela_windows PUBLIC Tela::Pictor PRIVATE user32 gdi32 advapi32 shcore)
   target_compile_definitions(tela_windows PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
   set_target_properties(tela_windows PROPERTIES EXPORT_NAME Windows)
   add_executable(tela_overlay examples/windows/overlay_host.cpp examples/windows/transition_editor.cpp
@@ -109,6 +112,10 @@ if(TELA_BUILD_WINDOWS)
     target_link_options(tela_source PRIVATE -municode)
   endif()
   install(TARGETS tela_source RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  add_executable(tela_desktop_overlay_probe examples/windows/desktop_overlay_probe.cpp
+    examples/windows/desktop_probe_content.cpp examples/windows/desktop_probe_options.cpp)
+  target_link_libraries(tela_desktop_overlay_probe PRIVATE Tela::Windows)
+  target_compile_definitions(tela_desktop_overlay_probe PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
   add_executable(tela_probe_target examples/windows/probe_target.cpp)
   target_link_libraries(tela_probe_target PRIVATE user32 gdi32)
   target_compile_definitions(tela_probe_target PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
@@ -146,6 +153,9 @@ if(BUILD_TESTING)
   add_executable(tela_placement_tests tests/placement_test.cpp)
   target_link_libraries(tela_placement_tests PRIVATE Tela::Core)
   add_test(NAME tela_placement_contract COMMAND tela_placement_tests)
+  add_executable(tela_desktop_placement_tests tests/desktop_placement_test.cpp)
+  target_link_libraries(tela_desktop_placement_tests PRIVATE Tela::Core)
+  add_test(NAME tela_desktop_placement_contract COMMAND tela_desktop_placement_tests)
   add_executable(tela_presentation_tests tests/presentation_test.cpp)
   target_link_libraries(tela_presentation_tests PRIVATE Tela::Core)
   add_test(NAME tela_presentation_reasons COMMAND tela_presentation_tests)

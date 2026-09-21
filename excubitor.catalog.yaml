@@ -54,6 +54,18 @@ services:
     exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --spec-view, '${ARS_ROOT}/Tela/build-native/spec-view.tela', --attach, probe-target, --place, right, --font-size, '16', --seconds, '300']
     autostart: false
     restart_policy: 'no'
+  # 対象ウインドウ無しでデスクトップの隅に浮かぶ半透明の面の目視用プローブ。120 秒で自分で終わる。
+  - code: tela-desktop-overlay-probe
+    name: Tela Desktop Overlay Probe
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_desktop_overlay_probe.exe
+    exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --seconds, '120']
+    autostart: false
+    restart_policy: 'no'
   # Pf の内容を対象アプリ無しで実寸表示するネイティブビュー。
   - code: tela-view
     name: Tela Native View

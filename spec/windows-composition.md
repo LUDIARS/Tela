@@ -12,6 +12,8 @@ The main visual HWND has `WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_NOACTIVATE`.
 Exclusive regions use separate no-activate layered HWNDs with region masks.
 Later shared regions cut through earlier exclusive masks, including overlaps.
 The main visual bitmap excludes exclusive pixels so Windows blends them once.
+The attached overlay and the desktop overlay share this composition (`LayeredComposition`) and
+the native pointer translation (`NativePointer`); neither keeps a second copy.
 `SetCapture` fixes native drag routing until up/cancel; hidden/destroyed targets
 and capture loss release it. Text-entry editing uses a modeless Windows text
 input surface; annotations and buttons stay in the Pictor surface.
@@ -54,6 +56,36 @@ Excubitor, and use Tools/Tela/Scene Bridge. Select a Scene object, add/edit/save
 transition, move the Scene camera, change selection, hide the dock tab, disconnect,
 reconnect and close Unity. Repeat idle and resource measurements during actual
 Unity use. A successful library build is not evidence that these UI checks passed.
+
+## Desktop overlay acceptance (SPEC-TL-DESKTOP-OVERLAY)
+
+`WindowsDesktopOverlay` presents through the same layered composition and native pointer path as
+the attached overlay, without a target window. Its look and its input cannot be checked
+automatically; CTest covers only the placement arithmetic. A build or a passing CTest is not
+evidence for any item below. Launch `tela-desktop-overlay-probe` through Excubitor from the main
+project with a Cc testing claim (it exits by itself after 120 seconds), or run
+`tela_desktop_overlay_probe --font <file.ttf> [--corner <corner>] [--seconds <n>]` directly.
+
+1. The probe panel appears in the chosen corner of the primary monitor's work area, 16 logical
+   pixels from both edges, above the taskbar. Its rounded backdrop is translucent: the windows and
+   wallpaper below stay visible, and text edges show no opaque rectangle.
+2. Nothing appears in the taskbar or in Alt+Tab. Starting the probe does not change the focused
+   window, and typing continues to reach the application that had focus.
+3. Click on the backdrop or its text: the window below receives the click (select text, press a
+   button beneath). Click `Clicked N times`: only the count increases, the window below receives
+   nothing and keeps its activation state. Drag out of the button before releasing: no count.
+4. Hover the grip at the top right and then the button: the `Pointer:` line names each, and returns to
+   `elsewhere` after the pointer leaves. Drag the grip: the whole panel follows the pointer. On release
+   the probe prints `moved x y corner margin_x margin_y` and the panel shows the same values. Drop
+   the panel partly beyond the screen edge: it settles fully inside the work area.
+5. With two monitors of different DPI: drag the panel onto the other monitor. After release it is
+   drawn at that monitor's scale (sharp text, same logical size). Change the display scale while it
+   runs: the panel follows within a second.
+6. Drag the panel onto a secondary monitor, then disconnect that monitor while the probe runs: the
+   panel returns to the corner it was nearest to on that monitor, now on the primary monitor.
+7. At exit the probe prints `gdi before -> after, user before -> after`. USER objects return to the
+   starting count. GDI keeps only what the first GDI use allocates for the process. Repeating
+   create/destroy must not grow either count.
 
 ## Presentation diagnostics (report version 2)
 

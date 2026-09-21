@@ -1,0 +1,20 @@
+{
+  "name": "desktop-overlay",
+  "description": "対象ウインドウを持たず、デスクトップに単独で浮かぶ半透明の面を出す。モニタの作業領域を基準にした置き場所、モニタごとのDPIへの追従、画面外からの主モニタへの復帰、つまみのドラッグによる移動と移動後の位置の通知を所有する。半透明の出し方と入力の受け方はhost-overlayの合成を使い、内容の意味と位置の保存は持ち込まない。",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)(src/domain/desktop/|src/infrastructure/windows/(windows_desktop_overlay|desktop_monitors)\\.(cpp|hpp)$|include/tela/(windows_desktop_overlay|desktop_placement)\\.hpp$|tests/desktop_placement_test\\.cpp$)"
+    },
+    {
+      "pathPattern": "(^|/)examples/windows/desktop_(overlay_probe|probe_content|probe_options)\\.(cpp|hpp)$"
+    }
+  ],
+  "specRefs": [
+    "spec/feature/desktop-overlay.md",
+    "spec/contracts.md",
+    "spec/windows-composition.md",
+    "spec/ux/product.md"
+  ]
+}

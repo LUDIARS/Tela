@@ -5,4 +5,6 @@ add_executable(tela_consumer main.cpp)
 target_link_libraries(tela_consumer PRIVATE Tela::Core Tela::Transitions)
 if(TARGET Tela::Windows)
   target_link_libraries(tela_consumer PRIVATE Tela::Windows)
+  # Compiles and links the desktop surface from the installed package.
+  target_compile_definitions(tela_consumer PRIVATE TELA_CONSUMER_WINDOWS)
 endif()

@@ -8,9 +8,9 @@ Iter can reuse the same C++ contracts without depending on Unity.
 
 | Target | Responsibility |
 |---|---|
-| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window |
+| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window, desktop placement by monitor corner or absolute spot |
 | `Tela::Pictor` | Explicit CPU TrueType/premultiplied bitmap renderer using existing Pictor |
-| `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe, and a normal top-level window that draws a declaration itself |
+| `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe, a normal top-level window that draws a declaration itself, and a translucent surface floating on the desktop without a target window |
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
 | `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
 | `Tela::SpecView` | Read-only Pf spec view file, view fitting and per-group show/hide declarations |
@@ -29,6 +29,10 @@ When the target application cannot be started at all, `tela_view --font <ttf> --
 ([view host](spec/feature/view-host.md)).
 With `--graph <file>` either host draws a Pf domain relation diagram, whose node positions
 and edge routes come from Pf and are never re-curved ([graph view](spec/feature/graph-view.md)).
+`tela::WindowsDesktopOverlay` floats a declaration on the desktop with no target window: topmost,
+never activated, click-through except over exclusive regions, placed in a corner of the primary
+monitor's work area or at an absolute spot, following each monitor's DPI and movable by a grip
+([desktop overlay](spec/feature/desktop-overlay.md)); `tela_desktop_overlay_probe --font <ttf>` shows it.
 `--place left|right|above|below` puts the view beside that window at its own size instead of
 inside it, and `--font-size <8..96>` picks the text size for the run
 ([overlay placement](spec/feature/overlay-placement.md)).
