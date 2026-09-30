@@ -40,7 +40,7 @@ float polyline(const Shape& shape,Point p) {
 }
 float distance(const Shape& shape,Point p) {
     switch(shape.kind) {
-    case ShapeKind::rectangle: return rounded_rectangle(shape,p);
+    case ShapeKind::rectangle: case ShapeKind::image: return rounded_rectangle(shape,p);
     case ShapeKind::ellipse: return ellipse(shape,p);
     case ShapeKind::polyline: return polyline(shape,p);
     }
