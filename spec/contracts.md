@@ -180,18 +180,26 @@ first break; a caller that wants wrapped text declares the rows it needs.
 
 ## Desktop overlay [id: SPEC-TL-DESKTOP-OVERLAY]
 
-`WindowsDesktopOverlay` presents a declaration on the desktop without a target window. Its
-windows are topmost, never activated, unowned tool windows, so they appear in neither the taskbar
-nor Alt+Tab. It shows and takes input through the same layered composition as the attached
-overlay: one passthrough visual window plus one input window per exclusive region, clipped to
-that region's fragments. Everything else passes input through to the windows below. The renderer's
+A desktop surface presents a declaration on the desktop without a target window. The contract is
+shared by `WindowsDesktopOverlay` and `MacOSDesktopOverlay`, which take the same
+`DesktopOverlayOptions`. The surface is topmost and never activated, and it is absent from the
+OS's window switchers: on Windows unowned tool windows (neither taskbar nor Alt+Tab); on macOS
+nonactivating panels above floating windows, on every Space, left out of Mission Control's window
+spread, the window cycle and the Window menu (the Dock and Cmd+Tab follow the caller's activation
+policy). It shows and takes input through the same composition as the attached overlay of its OS:
+one passthrough visual window plus input windows for the exclusive regions, clipped to those
+regions' fragments. Everything else passes input through to the windows below. The renderer's
 premultiplied bitmap is presented as is: translucency comes from the declaration's own colours
 (for example a rounded canvas rectangle with an alpha fill), never from a surface-wide setting.
 
 Placement is the caller's. A `DesktopPlacement` gives a logical size and either a corner of the
-primary monitor's work area with logical margins, or an absolute top-left in desktop physical
-pixels. Logical values are converted with the DPI of the monitor the surface lands on (Per-Monitor
-V2, independent of the process default). An absolute surface belongs to the monitor whose work area
+primary monitor's work area with logical margins, or an absolute top-left in desktop coordinates.
+On Windows those are physical pixels and logical values are converted with the DPI of the monitor
+the surface lands on (Per-Monitor V2, independent of the process default). macOS has no desktop-wide
+pixel grid, so there the work areas are the displays' `visibleFrame`s in global points measured down
+from the primary display's top edge, logical values are points, and the surface is drawn at the
+`backingScaleFactor` of the display holding it (`place_on_point_desktop`); the rules below apply
+with a DPI scale of 1 per point. An absolute surface belongs to the monitor whose work area
 holds the largest share of it when sized with that monitor's DPI; equal shares prefer the primary,
 then the order the monitors were listed in. The surface is clamped into that work area. When no
 monitor holds any of it, it returns to the same corner of the primary monitor with the same margins
@@ -214,6 +222,12 @@ can be read the surface is hidden. The viewport reports the surface as focused w
 that is never activated has no host focus to lose. `hovered()` names the exclusive region under the
 pointer. Destruction releases every window, capture and hit region, and the runtime loses the
 surface as it loses a host (`disconnect`).
+
+`exclude_from_capture` (default false) keeps every window of the surface, visual and input alike,
+out of screen capture, recording and sharing: `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` on
+Windows and `NSWindowSharingNone` on macOS. When Windows cannot exclude a window (before Windows 10
+2004) the window is destroyed and `std::runtime_error` is thrown to the caller; the surface never
+falls back to `WDA_MONITOR`, which would show a black box in the capture instead of nothing.
 
 ## Graph view [id: SPEC-TL-GRAPH]
 

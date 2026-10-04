@@ -5,7 +5,7 @@ add_library(tela_core src/domain/composition/document.cpp src/domain/composition
   src/application/runtime.cpp src/domain/input/input_regions.cpp src/domain/input/gesture_ownership.cpp
   src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp
   src/domain/overlay/presentation_status.cpp src/domain/overlay/placement.cpp
-  src/domain/desktop/desktop_placement.cpp)
+  src/domain/desktop/desktop_placement.cpp src/domain/desktop/desktop_points.cpp)
 add_library(Tela::Core ALIAS tela_core)
 include(GNUInstallDirs)
 target_include_directories(tela_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -69,7 +69,9 @@ if(TELA_BUILD_MACOS)
   enable_language(OBJCXX)
   add_library(tela_macos src/infrastructure/macos/macos_overlay.mm
     src/infrastructure/macos/window_target.mm src/infrastructure/macos/bitmap_view.mm
-    src/infrastructure/macos/input_panel.mm src/infrastructure/macos/region_surface.mm)
+    src/infrastructure/macos/input_panel.mm src/infrastructure/macos/region_surface.mm
+    src/infrastructure/macos/region_panels.mm src/infrastructure/macos/desktop_screens.mm
+    src/infrastructure/macos/desktop_panel.mm src/infrastructure/macos/macos_desktop_overlay.mm)
   add_library(Tela::MacOS ALIAS tela_macos)
   set_target_properties(tela_macos PROPERTIES EXPORT_NAME MacOS OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED YES)
   target_compile_options(tela_macos PRIVATE -fobjc-arc)
@@ -78,6 +80,11 @@ if(TELA_BUILD_MACOS)
   set_target_properties(tela_macos_overlay PROPERTIES OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED YES)
   target_compile_options(tela_macos_overlay PRIVATE -fobjc-arc)
   target_link_libraries(tela_macos_overlay PRIVATE Tela::MacOS "-framework AppKit")
+  add_executable(tela_macos_desktop_overlay_probe examples/macos/desktop_overlay_probe.mm
+    examples/desktop/desktop_probe_content.cpp examples/desktop/desktop_probe_options.cpp)
+  set_target_properties(tela_macos_desktop_overlay_probe PROPERTIES OBJCXX_STANDARD 20 OBJCXX_STANDARD_REQUIRED YES)
+  target_compile_options(tela_macos_desktop_overlay_probe PRIVATE $<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>)
+  target_link_libraries(tela_macos_desktop_overlay_probe PRIVATE Tela::MacOS "-framework AppKit")
   install(TARGETS tela_macos EXPORT TelaTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
   install(TARGETS tela_macos_overlay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
@@ -113,7 +120,7 @@ if(TELA_BUILD_WINDOWS)
   endif()
   install(TARGETS tela_source RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   add_executable(tela_desktop_overlay_probe examples/windows/desktop_overlay_probe.cpp
-    examples/windows/desktop_probe_content.cpp examples/windows/desktop_probe_options.cpp)
+    examples/desktop/desktop_probe_content.cpp examples/desktop/desktop_probe_options.cpp)
   target_link_libraries(tela_desktop_overlay_probe PRIVATE Tela::Windows)
   target_compile_definitions(tela_desktop_overlay_probe PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
   add_executable(tela_probe_target examples/windows/probe_target.cpp)
@@ -156,6 +163,9 @@ if(BUILD_TESTING)
   add_executable(tela_desktop_placement_tests tests/desktop_placement_test.cpp)
   target_link_libraries(tela_desktop_placement_tests PRIVATE Tela::Core)
   add_test(NAME tela_desktop_placement_contract COMMAND tela_desktop_placement_tests)
+  add_executable(tela_desktop_points_tests tests/desktop_points_test.cpp)
+  target_link_libraries(tela_desktop_points_tests PRIVATE Tela::Core)
+  add_test(NAME tela_desktop_points_contract COMMAND tela_desktop_points_tests)
   add_executable(tela_presentation_tests tests/presentation_test.cpp)
   target_link_libraries(tela_presentation_tests PRIVATE Tela::Core)
   add_test(NAME tela_presentation_reasons COMMAND tela_presentation_tests)

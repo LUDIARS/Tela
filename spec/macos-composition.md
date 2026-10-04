@@ -27,6 +27,11 @@ Pictor が共有ライブラリなら、その実行時配置は利用アプリ�
 PictorSurface は overlay より長生きさせる。対象はウインドウ全体であり、
 Unity Scene の部分領域や任意 NSView への接続はこの adapter では提供しない。
 
+対象ウインドウを持たずデスクトップに浮かぶ面は `MacOSDesktopOverlay` が担う。契約と置き場所の
+ポイント換算、取り込み除外は [desktop overlay](feature/desktop-overlay.md) の「macOS」節と
+SPEC-TL-DESKTOP-OVERLAY にある。寿命とスレッドの規則はこの節と同じで、排他領域の入力用パネルは
+`RegionPanels` を `MacOSOverlay` と共用する。
+
 `examples/macos/overlay_host.mm` は対象 ID、フォント、継続秒数（既定120、最大3600）を
 引数に取る有限時間のサンプル。対象情報を可視時50ms・非表示時250msで観測する。
 ライブラリ自体はタイマー、スレッド、イベントタップ、IPC を開始しない。

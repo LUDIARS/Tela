@@ -8,6 +8,8 @@ struct DesktopProbeOptions {
     std::string font;
     tela::DesktopCorner corner{tela::DesktopCorner::bottom_right};
     int seconds{120};
+    // Keeps the surface out of screen capture, to check a presenter's stream does not show it.
+    bool exclude_from_capture{};
 };
 // Throws std::invalid_argument for a missing font, an unknown option or a value out of range.
 DesktopProbeOptions desktopProbeOptions(int argc, char** argv);

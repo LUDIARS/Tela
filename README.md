@@ -8,9 +8,10 @@ Iter can reuse the same C++ contracts without depending on Unity.
 
 | Target | Responsibility |
 |---|---|
-| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window, desktop placement by monitor corner or absolute spot |
+| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window, desktop placement by monitor corner or absolute spot (physical pixels, or points with a per-display backing scale) |
 | `Tela::Pictor` | Explicit CPU TrueType/premultiplied bitmap renderer using existing Pictor |
-| `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe, a normal top-level window that draws a declaration itself, and a translucent surface floating on the desktop without a target window |
+| `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe, a normal top-level window that draws a declaration itself, and a translucent surface floating on the desktop without a target window, optionally excluded from screen capture |
+| `Tela::MacOS` | Nonactivating AppKit panels: an overlay following a target window, and a translucent surface floating on every Space without a target window, optionally excluded from screen capture |
 | `Tela::Transitions` | Sample transition data, editing declarations and persistence |
 | `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
 | `Tela::SpecView` | Read-only Pf spec view file, view fitting and per-group show/hide declarations |
@@ -33,6 +34,9 @@ and edge routes come from Pf and are never re-curved ([graph view](spec/feature/
 never activated, click-through except over exclusive regions, placed in a corner of the primary
 monitor's work area or at an absolute spot, following each monitor's DPI and movable by a grip
 ([desktop overlay](spec/feature/desktop-overlay.md)); `tela_desktop_overlay_probe --font <ttf>` shows it.
+`tela::MacOSDesktopOverlay` is the same surface on macOS, placed in points on the primary display's
+visible frame and drawn at each display's backing scale (`tela_macos_desktop_overlay_probe`).
+`exclude_from_capture` keeps either one out of screen capture, so a presenter's overlay stays off the stream.
 `--place left|right|above|below` puts the view beside that window at its own size instead of
 inside it, and `--font-size <8..96>` picks the text size for the run
 ([overlay placement](spec/feature/overlay-placement.md)).

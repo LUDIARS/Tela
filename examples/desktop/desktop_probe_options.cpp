@@ -20,6 +20,8 @@ DesktopProbeOptions desktopProbeOptions(int argc, char** argv) {
     DesktopProbeOptions options;
     for(int i = 1; i < argc; ++i) {
         const std::string name = argv[i];
+        // The one switch without a value.
+        if(name == "--exclude-from-capture") { options.exclude_from_capture = true; continue; }
         if(i + 1 >= argc) throw std::invalid_argument("Missing value for " + name);
         const std::string value = argv[++i];
         if(name == "--font") options.font = value;

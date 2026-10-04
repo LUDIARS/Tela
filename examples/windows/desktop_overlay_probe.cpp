@@ -2,8 +2,8 @@
 // @spec Desktop overlay
 // Floats the fixed probe declaration on the desktop so a person can check by eye that it is
 // translucent, that the windows below keep their input, and that the grip moves it.
-#include "desktop_probe_content.hpp"
-#include "desktop_probe_options.hpp"
+#include "../desktop/desktop_probe_content.hpp"
+#include "../desktop/desktop_probe_options.hpp"
 #include <tela/windows_desktop_overlay.hpp>
 #include <chrono>
 #include <iostream>
@@ -28,6 +28,7 @@ void run(const DesktopProbeOptions& options) {
     surface.placement.height = desktop_probe_height;
     surface.placement.corner = options.corner;
     surface.grip = desktop_probe_grip;
+    surface.exclude_from_capture = options.exclude_from_capture;
     surface.moved = [&content](const tela::DesktopPlacement& placement) {
         content.moved(placement);
         // A real caller stores this; the probe prints it so the spot can be checked by hand.

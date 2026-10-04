@@ -17,7 +17,7 @@
       "pathPattern": "(^|/)examples/windows/attached_viewport\\.(cpp|hpp)$"
     },
     {
-      "pathPattern": "(^|/)(src/infrastructure/macos/|include/tela/macos_overlay\\.hpp$|examples/macos/)"
+      "pathPattern": "(^|/)(src/infrastructure/macos/(?!(macos_desktop_overlay|desktop_screens|desktop_panel)\\.)|include/tela/macos_overlay\\.hpp$|examples/macos/(?!desktop_overlay_probe\\.))"
     }
   ],
   "specRefs": [

@@ -16,7 +16,8 @@
 namespace tela::macos {
 void PointerSession::dispatch(NSEvent* event, PointerPhase phase) noexcept {
     try {
-        if (NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier != target.process) {
+        if (intercept && intercept(event, phase)) return;
+        if (front_only && NSWorkspace.sharedWorkspace.frontmostApplication.processIdentifier != target.process) {
             runtime.cancel(); return;
         }
         // AppKit sends drag/up to the view receiving down, even outside it.

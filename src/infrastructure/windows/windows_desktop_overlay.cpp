@@ -11,6 +11,10 @@ namespace tela {
 namespace {
 constexpr wchar_t class_name[] = L"Tela.DesktopOverlay.v1";
 constexpr char host_id[] = "desktop";
+// Older SDKs lack the name; the value is fixed by Windows 10 2004.
+#ifndef WDA_EXCLUDEFROMCAPTURE
+#define WDA_EXCLUDEFROMCAPTURE 0x00000011
+#endif
 
 // A drag in progress: where the pointer went down and how far the windows have been moved.
 struct Drag { POINT start{}; int dx{}, dy{}; };
@@ -37,6 +41,7 @@ struct WindowsDesktopOverlay::Impl {
     DesktopPlacement placement;
     std::string grip;
     std::function<void(const DesktopPlacement&)> moved;
+    bool exclude_from_capture{};
     windows::NativePointer pointer;
     std::exception_ptr error;
     std::optional<Drag> drag;
@@ -50,7 +55,7 @@ struct WindowsDesktopOverlay::Impl {
 
     Impl(Runtime& r, PictorSurface& p, DesktopOverlayOptions options)
         : runtime(r), renderer(p), placement(options.placement), grip(std::move(options.grip)),
-          moved(std::move(options.moved)) {
+          moved(std::move(options.moved)), exclude_from_capture(options.exclude_from_capture) {
         windows::PerMonitorScope dpi;
         if(!dpi.active()) throw std::runtime_error("Tela desktop overlay requires Per-Monitor V2 DPI awareness");
         // A size or margin no layout can satisfy fails here, before any window exists.
@@ -77,6 +82,13 @@ struct WindowsDesktopOverlay::Impl {
             WS_EX_LAYERED | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | (passthrough ? WS_EX_TRANSPARENT : 0),
             class_name, L"Tela", WS_POPUP, 0, 0, 1, 1, nullptr, nullptr, GetModuleHandleW(nullptr), this);
         if(!window) throw std::runtime_error("Cannot create Tela desktop overlay window");
+        // Every window, visual and input alike, is excluded, or the capture would show the
+        // exclusive pixels the input windows carry. WDA_MONITOR would black the surface out in the
+        // stream instead of hiding it, so a system without WDA_EXCLUDEFROMCAPTURE is an error.
+        if(exclude_from_capture && !SetWindowDisplayAffinity(window, WDA_EXCLUDEFROMCAPTURE)) {
+            DestroyWindow(window);
+            throw std::runtime_error("Cannot exclude Tela desktop overlay from capture (requires Windows 10 2004 or later)");
+        }
         return window;
     }
     void hide() {

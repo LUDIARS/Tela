@@ -1,25 +1,13 @@
 // @implements SPEC-TL-DESKTOP-OVERLAY
 // @spec Desktop overlay
 #pragma once
-#include <tela/desktop_placement.hpp>
+#include <tela/desktop_overlay_options.hpp>
 #include <tela/pictor_surface.hpp>
 #include <cstdint>
-#include <functional>
 #include <memory>
 #include <string>
 
 namespace tela {
-struct DesktopOverlayOptions {
-    DesktopPlacement placement;
-    // Element ID whose exclusive region drags the surface. Its pointer input moves the surface
-    // and never reaches the runtime, so it should not be a button. Empty: the surface stays put.
-    std::string grip;
-    // Where the surface settled after a drag. Storing it is the caller's job; passing it back as
-    // the placement restores the spot. Called from synchronize(), never from a window message,
-    // and it must not destroy the surface.
-    std::function<void(const DesktopPlacement&)> moved;
-};
-
 // A surface with no target window, floating on the desktop: topmost, never activated, absent
 // from the taskbar and Alt+Tab, with per-pixel alpha. It presents the renderer's premultiplied
 // bitmap as is, so any translucency comes from the declaration's own colours. Input passes
@@ -28,7 +16,10 @@ struct DesktopOverlayOptions {
 class WindowsDesktopOverlay {
 public:
     // Throws std::invalid_argument when no monitor layout can hold the placement (see
-    // place_on_desktop) and std::runtime_error when the windows cannot be created.
+    // place_on_desktop) and std::runtime_error when the windows cannot be created. With
+    // exclude_from_capture, a window Windows cannot exclude (before Windows 10 2004) throws
+    // std::runtime_error from here or from the synchronize() that creates it; it never falls
+    // back to WDA_MONITOR.
     WindowsDesktopOverlay(Runtime&, PictorSurface&, DesktopOverlayOptions);
     // Releases every window, capture and surface; the runtime loses the surface as a lost host.
     ~WindowsDesktopOverlay();
