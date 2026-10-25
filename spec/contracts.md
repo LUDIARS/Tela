@@ -132,14 +132,34 @@ at most 4096 bytes. Unknown records, a missing or repeated view header, an empty
 list, duplicate IDs, cards of unknown groups and trailing data reject the whole file.
 Tela only reads the file; Pf remains the source of truth.
 
-The view is fitted into the logical viewport, keeping its aspect ratio and centered.
-Visible groups declare outlined cards with a code line (`code status vN`) and a title line,
+The view is fitted into the logical viewport, keeping its aspect ratio and centered, when
+that fit is scale 1 or more. Otherwise it is paged (below). Visible groups declare outlined cards with a code line (`code status vN`) and a title line,
 both with passthrough input. The card fill pre-blends Pf's dark canvas with the group color
 at the same ratio Pf uses, so the near-white text reads over a light host as well as a dark
 one; the outline keeps the group color. Every group keeps an exclusive toggle button. A toggle
 changes session state only and is never written back. Unchanged declaration inputs are not
 redeclared, and a hidden host declares nothing. The group palette matches Pf's
 `SPEC_VIEW_PALETTE`, so the Pf screen and the Tela overlay draw the same picture.
+
+### Paged tall views (2026-10-25)
+
+UX-TL-W9: a view that would fit only below scale 1 is not shrunk until its text is
+unreadable. It fits the picture width, at most scale 1, starts at the viewport top and is
+read page by page; there is no horizontal paging because Pf's layout has a fixed width.
+The scroll position is session state of the spec-view application, in exported
+coordinates, and is always 0 or a card's top. "Next page" moves to the first card below
+the current position that is not shown whole; "Prev page" moves to the earliest card top
+(or 0) within one page above, so every card is shown whole on some page; "First" returns
+to 0. At the last page and at the top they do nothing. A page is the viewport height
+divided by the scale (`spec_view_page`), taken from the declaration the user pressed on.
+A paged view declares only whole cards (a card taller than a page shows from its top),
+its card canvas covers the viewport height only, and the strip adds a `Cards a-b / n`
+line (visible groups' cards in Pf order) and exclusive Prev page / Next page / First
+buttons; the strip's shrink-to-fit counts these four rows. Group toggles do not move the
+position. A host large enough to fit the whole view at scale 1 or more ignores the
+position and shows no page controls. Card input stays passthrough; wheel scrolling is not
+provided, because the runtime has no wheel routing and an exclusive card area would take
+the host's input inside Unity.
 
 ## Overlay placement [id: SPEC-TL-PLACEMENT]
 
@@ -149,7 +169,10 @@ target's client area, as before. The other placements build the viewport from th
 own exported size and put it beside the target window, so a view larger than the host is
 read at 1:1 instead of being shrunk. A placement with no room in the monitor work area flips
 to the opposite side; when neither side fits the viewport is clamped into the work area, and
-a view larger than the work area is reduced to it. A degenerate size or work area falls back
+a view larger than the work area is reduced to it. A spec view's own size includes its
+control strip (`spec_view_controls_width`), so its cards are drawn at 1:1 beside the
+target; a spec view taller than the work area is then paged rather than shrunk
+(SPEC-TL-SPEC-VIEW). A degenerate size or work area falls back
 to the host rect. Placements other than `inside` require `--attach probe-target`, because
 through the Unity bridge the host decides the geometry. Target visibility, minimization and
 loss are handled exactly as for `inside`.

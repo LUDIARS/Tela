@@ -12,6 +12,8 @@ SPEC-TL-SPEC-VIEW。Pf（Praeforma）の仕様書可視化ビューで作った�
    カードを対象ウインドウの隣に等倍で置くときは `--place right` などを足す
    （[overlay placement](overlay-placement.md)）。文字の大きさは `--font-size` で選ぶ。
 4. 左上のボタン（ON/OFF とグループ名）でグループごとに表示を切り替える。切り替えは起動中だけで、ファイルや Pf へは書き戻さない。
+5. 図が画面より大きいときは、左の「Prev page」「Next page」「First」でページを移動する。位置は「Cards 4-6 / 50」のように出る。
+   移動も起動中だけで、書き戻さない。
 
 `--spec-view` は `--probe` / `--transitions` / `--scene-overlay` と同時に指定できない。
 `--attach probe-target` は `--spec-view` か `--scene-overlay` が要る（`--probe` は既に同じ窓を持つ）。
@@ -22,6 +24,10 @@ SPEC-TL-SPEC-VIEW。Pf（Praeforma）の仕様書可視化ビューで作った�
 
 - 左側に操作専用領域を確保し、図は残りのビューポートへ縦横比を保って中央に収める。カードの座標は Pf の書き出し時に
   確定しており、Tela は図全体を一度だけ収める。
+- ただし収めると 1 倍より小さくなる図（UX-TL-W9）は、文字が読めなくなるまで縮めない。横幅に合わせ（1 倍上限）、
+  上端から描いてページ移動で読む。ページは欠けないカード単位で区切る。次のページは、今のページで欠けた最初のカードから
+  始まるので、どのカードも必ずどこかのページで丸ごと見える。ホイールでのスクロールは無い（入力経路が無く、カード領域を
+  専有にすると Unity 上でホストの操作を奪うため）。
 - 文字・行高・余白も図と同じ倍率で動く。題名はカード内の最大3行に折り返し、残りは枠でクリップする。
 - 表示中のグループはカードを色付きの枠で描き、コード行（`コード 状態 v版`）と題名行を重ねる。
   入力はホストへ透過する。グループの色は並び順で決まり、Pf の `SPEC_VIEW_PALETTE` と同じ並びを使う。
@@ -40,7 +46,7 @@ SPEC-TL-SPEC-VIEW。Pf（Praeforma）の仕様書可視化ビューで作った�
 | src/application/spec_view_document.cpp | ビューポートへの収め方と宣言 |
 | examples/windows/spec_view_content.* | ホストでの再宣言判定と切り替え |
 | examples/windows/overlay_options.* | `--spec-view` と `--attach` の受け取りと排他 |
-| tests/spec_view_test.cpp | 読み込み・拒否・宣言・切り替え・上限の契約テスト（Pf の書き出しテストと同じバイト列） |
+| tests/spec_view_test.cpp | 読み込み・拒否・宣言・切り替え・上限・ページ移動の契約テスト（Pf の書き出しテストと同じバイト列） |
 
 ## 未確認
 

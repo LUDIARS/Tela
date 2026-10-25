@@ -2,6 +2,7 @@
 #include <tela/spec_view.hpp>
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 
 namespace tela {
@@ -62,5 +63,32 @@ void SpecView::set_visible(const std::string& group_id, bool visible) {
     const auto group = std::find_if(groups_.begin(), groups_.end(), [&](const auto& item) { return item.id == group_id; });
     require_valid(group != groups_.end(), "Unknown spec view group");
     group->visible = visible;
+}
+
+void SpecView::navigate(SpecViewAction action, float page) {
+    constexpr float tolerance = .5f; // exported coordinates are whole or half pixels
+    if(action == SpecViewAction::first || !std::isfinite(page) || page <= 0) { scroll_ = 0; return; }
+    if(action == SpecViewAction::next) {
+        // Hidden groups keep their place in Pf's layout, so every card is a stable page start.
+        std::optional<float> start;
+        for(const auto& card : cards_) {
+            const auto& b = card.bounds;
+            if(b.y > scroll_ + tolerance && b.y + b.height > scroll_ + page + tolerance)
+                start = std::min(start.value_or(b.y), b.y);
+        }
+        if(start) scroll_ = *start;
+        return;
+    }
+    if(scroll_ <= 0) return;
+    // The earliest start that still reaches the current one, so going back shows every card.
+    float earliest = scroll_, latest = 0;
+    const auto consider = [&](float top) {
+        if(top >= scroll_ - tolerance) return;
+        if(top >= scroll_ - page - tolerance) earliest = std::min(earliest, top);
+        latest = std::max(latest, top);
+    };
+    consider(0);
+    for(const auto& card : cards_) consider(card.bounds.y);
+    scroll_ = earliest < scroll_ ? earliest : latest;
 }
 }

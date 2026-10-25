@@ -12,10 +12,18 @@ void SpecViewContent::toggle(const std::string& group_id) {
     ++toggles_;
 }
 
+void SpecViewContent::navigate(tela::SpecViewAction action) {
+    // Pages by what the user saw when pressing; a later resize keeps the same top card.
+    view_.navigate(action, page_);
+}
+
 void SpecViewContent::refresh(tela::Runtime& runtime) {
     const auto& viewport = runtime.viewport();
-    const Revision revision{viewport.width, viewport.height, viewport.dpi_scale, viewport.visible, toggles_, runtime.theme()};
+    const Revision revision{viewport.width, viewport.height, viewport.dpi_scale, viewport.visible, toggles_,
+        view_.scroll(), runtime.theme()};
     if(declared_ == revision) return;
-    runtime.document(tela::spec_view_document(view_, viewport, [this](const std::string& id) { toggle(id); }, runtime.theme()));
+    page_ = tela::spec_view_page(view_.info(), viewport);
+    runtime.document(tela::spec_view_document(view_, viewport, [this](const std::string& id) { toggle(id); }, runtime.theme(),
+        [this](tela::SpecViewAction action) { navigate(action); }));
     declared_ = revision;
 }

@@ -153,6 +153,75 @@ void readable_views() {
 }
 }
 
+// UX-TL-W9: a view taller than the host keeps scale 1 and is read page by page, whole cards only.
+void paging() {
+    std::vector<tela::SpecViewCard> cards;
+    for(int i = 0; i < 9; ++i)
+        cards.push_back({"a", "C" + std::to_string(i), "Title", "draft", 1, {10, 10 + 110.f * i, 380, 96}});
+    tela::SpecView view({"P", "1", 400, 1000}, {{"a", "A", true}}, cards);
+    const tela::Viewport viewport{"host", "view", 1, 0, 0, 1000, 400, 1, true, true};
+    require(tela::spec_view_area(view.info(), {280, 0, 720, 400}) == tela::Rect{440, 0, 400, 1000},
+        "a tall view keeps scale 1 from the top instead of shrinking its text");
+    require(tela::spec_view_page(view.info(), viewport) == 400, "a page is the viewport height at scale 1");
+    tela::SpecViewAction pressed{};
+    bool navigated = false;
+    const auto declare = [&] {
+        return tela::spec_view_document(view, viewport, {}, {}, [&](tela::SpecViewAction a) { pressed = a; navigated = true; });
+    };
+    const auto position = [&](const tela::Document& document) {
+        const auto* text = find(document, "spec-view/page/position");
+        return text ? text->label : std::string();
+    };
+    auto document = declare();
+    require(position(document) == "Cards 1-3 / 9", "the first page shows only the cards that fit whole");
+    require(find(document, "spec-view/group/a/code/C3") == nullptr, "a card cut by the bottom edge is not declared");
+    const auto* next = find(document, "spec-view/page/1");
+    require(next && next->input == tela::InputPolicy::exclusive && next->label == "Next page", "page buttons take their own input");
+    next->action();
+    require(navigated && pressed == tela::SpecViewAction::next, "page buttons report their action");
+
+    view.navigate(tela::SpecViewAction::next, 400);
+    require(view.scroll() == 340, "the next page starts at the first card that was not shown whole");
+    document = declare();
+    require(position(document) == "Cards 4-6 / 9", "the position follows the shown cards");
+    const auto* code = find(document, "spec-view/group/a/code/C3");
+    require(code && code->layout.y == 4 && code->layout.text_scale == 1, "shown cards move up by the scroll at scale 1");
+    require(find(document, "spec-view/group/a/code/C0") == nullptr, "cards above the page are not declared");
+    const auto* shapes = find(document, "spec-view/group/a/shapes/0");
+    require(shapes && shapes->layout.y == 0 && shapes->layout.height == 400 && shapes->drawing.shapes().size() == 3
+        && shapes->drawing.shapes()[0].bounds.y == 0, "the card canvas covers the shown page only");
+
+    view.navigate(tela::SpecViewAction::next, 400);
+    require(view.scroll() == 670, "paging continues by whole cards");
+    view.navigate(tela::SpecViewAction::next, 400);
+    require(view.scroll() == 670 && position(declare()) == "Cards 7-9 / 9", "the last page stops at the end");
+    view.navigate(tela::SpecViewAction::previous, 400);
+    require(view.scroll() == 340, "going back shows the cards right above the page");
+    view.navigate(tela::SpecViewAction::previous, 400);
+    view.navigate(tela::SpecViewAction::previous, 400);
+    require(view.scroll() == 0, "going back stops at the top");
+    view.navigate(tela::SpecViewAction::next, 400);
+    view.navigate(tela::SpecViewAction::first, 400);
+    require(view.scroll() == 0, "first returns to the top");
+
+    view.navigate(tela::SpecViewAction::next, 400);
+    view.set_visible("a", false);
+    view.set_visible("a", true);
+    require(view.scroll() == 340, "group toggles keep the page");
+    auto tall = viewport;
+    tall.height = 2000;
+    const auto fitted = tela::spec_view_document(view, tall, {});
+    require(find(fitted, "spec-view/page/1") == nullptr && find(fitted, "spec-view/group/a/code/C0") != nullptr,
+        "a host that fits the whole view shows every card without page controls");
+
+    tela::Runtime runtime;
+    runtime.viewport(viewport);
+    runtime.document(declare());
+    runtime.frame_presented();
+    runtime.document(declare());
+    require(!runtime.needs_frame(), "an unchanged page remains idle");
+}
+
 int main(int argc, char** argv) {
     if(argc != 2) return 1;
     const std::filesystem::path path = argv[1];
@@ -161,6 +230,7 @@ int main(int argc, char** argv) {
         composition(path);
         limits();
         readable_views();
+        paging();
         std::filesystem::remove(path);
         return 0;
     } catch(const std::exception& e) {

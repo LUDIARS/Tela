@@ -11,21 +11,25 @@ class SpecViewContent {
 public:
     explicit SpecViewContent(const std::string& path);
     void refresh(tela::Runtime& runtime);
-    // The exported view has its own size; placements outside the host draw it at that size.
+    // The exported view has its own size; placements outside the host draw it at that size
+    // beside the control strip, so the strip is added rather than taken from the picture.
     // @implements SPEC-TL-PLACEMENT
-    tela::Rect natural_bounds() const noexcept { return {0, 0, view_.info().width, view_.info().height}; }
+    tela::Rect natural_bounds() const noexcept { return {0, 0, view_.info().width + tela::spec_view_controls_width, view_.info().height}; }
 private:
     void toggle(const std::string& group_id);
+    void navigate(tela::SpecViewAction action);
     // Keyed on declaration inputs rather than the viewport revision, which resets on disconnect.
     struct Revision {
         int width, height;
         float dpi_scale;
         bool visible;
         std::uint64_t toggles;
+        float scroll;
         tela::Theme theme;
         bool operator==(const Revision&) const = default;
     };
     tela::SpecView view_;
     std::uint64_t toggles_{};
+    float page_{}; // exported height shown when the current declaration was made
     std::optional<Revision> declared_;
 };
