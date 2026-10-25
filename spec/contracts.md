@@ -154,6 +154,7 @@ to 0. At the last page and at the top they do nothing. A page is the viewport he
 divided by the scale (`spec_view_page`), taken from the declaration the user pressed on.
 A paged view declares only whole cards (a card taller than a page shows from its top),
 its card canvas covers the viewport height only, and the strip adds a `Cards a-b / n`
+(`Cards a / n` when the page holds one card)
 line (visible groups' cards in Pf order) and exclusive Prev page / Next page / First
 buttons; the strip's shrink-to-fit counts these four rows. Group toggles do not move the
 position. A host large enough to fit the whole view at scale 1 or more ignores the

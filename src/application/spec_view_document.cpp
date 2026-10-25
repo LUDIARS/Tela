@@ -79,7 +79,9 @@ std::string page_position(const SpecView& view, const Frame& f) {
             last = total;
         }
     }
-    const std::string shown = first ? std::to_string(first) + "-" + std::to_string(last) : std::string("0");
+    // A page holding one card reads "Cards 50 / 50", not "Cards 50-50 / 50".
+    const std::string shown = !first ? std::string("0")
+        : first == last ? std::to_string(first) : std::to_string(first) + "-" + std::to_string(last);
     return "Cards " + shown + " / " + std::to_string(total);
 }
 

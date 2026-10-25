@@ -220,6 +220,12 @@ void paging() {
     runtime.frame_presented();
     runtime.document(declare());
     require(!runtime.needs_frame(), "an unchanged page remains idle");
+
+    auto short_host = viewport;
+    short_host.height = 120;
+    view.navigate(tela::SpecViewAction::first, 120);
+    require(position(tela::spec_view_document(view, short_host, {})) == "Cards 1 / 9",
+        "a page holding one card names that card alone");
 }
 
 int main(int argc, char** argv) {
