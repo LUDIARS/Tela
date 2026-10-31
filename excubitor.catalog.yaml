@@ -90,3 +90,15 @@ services:
     exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --graph, '${ARS_ROOT}/Tela/build-native/domain-graph.tela', --title, 'Praeforma domain graph', --seconds, '300']
     autostart: false
     restart_policy: 'no'
+  # Excubitor の通信監視が書く一覧 (TELA_LIST_VIEW 1) をデスクトップの右上に浮かべる。止めるまで動く。
+  - code: tela-list-overlay
+    name: Tela List Overlay (Excubitor network watch)
+    tier: local-app
+    project_code: tela
+    runtime: app
+    repo: LUDIARS/Tela
+    cwd: ${ARS_ROOT}/Tela
+    exec: ${ARS_ROOT}/Tela/build-native/Release/tela_list_overlay.exe
+    exec_args: [--font, '${ARS_ROOT}/Tela/build-native/assets/default.ttf', --file, '${ARS_ROOT}/Excubitor/data/netwatch/overlay.telalist']
+    autostart: false
+    restart_policy: 'no'

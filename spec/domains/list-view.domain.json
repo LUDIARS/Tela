@@ -1,0 +1,7 @@
+{
+  "name":"list-view",
+  "description":"他のプログラムが書き出した印つき行の一覧 (TELA_LIST_VIEW 1) を読み込み、デスクトップに浮かぶ半透明の面へ描いて、ファイルの置き換えに追従する。一覧の意味を知らず、ファイルを書き戻さない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(include/tela/list_view\\.hpp|src/application/list_view_(file|document)\\.cpp|examples/desktop/list_(file_source|overlay_options)\\.(hpp|cpp)|examples/windows/list_overlay_host\\.cpp|tests/list_view_test\\.cpp)$"}],
+  "specRefs":["spec/feature/list-view.md","spec/contracts.md"]
+}

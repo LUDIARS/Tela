@@ -5,7 +5,7 @@
   "templateRules": [],
   "membership": [
     {
-      "pathPattern": "(^|/)(src/domain/composition/|src/application/runtime\\.cpp$|include/tela/(document|geometry|layout|runtime)\\.hpp$|tests/(document|runtime)_test\\.cpp$|examples/declaration\\.cpp$)"
+      "pathPattern": "(^|/)(src/domain/composition/|src/domain/text/|include/tela/utf8\\.hpp$|src/application/runtime\\.cpp$|include/tela/(document|geometry|layout|runtime)\\.hpp$|tests/(document|runtime)_test\\.cpp$|examples/declaration\\.cpp$)"
     },
     {
       "pathPattern": "(^|/)(include/tela/(drawing|callout)\\.hpp$|tests/(drawing|callout)_test\\.cpp$|examples/overlay_drawing\\.cpp$)"

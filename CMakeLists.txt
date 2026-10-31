@@ -5,7 +5,8 @@ add_library(tela_core src/domain/composition/document.cpp src/domain/composition
   src/application/runtime.cpp src/domain/input/input_regions.cpp src/domain/input/gesture_ownership.cpp
   src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp
   src/domain/overlay/presentation_status.cpp src/domain/overlay/placement.cpp
-  src/domain/desktop/desktop_placement.cpp src/domain/desktop/desktop_points.cpp)
+  src/domain/desktop/desktop_placement.cpp src/domain/desktop/desktop_points.cpp
+  src/domain/text/utf8.cpp)
 add_library(Tela::Core ALIAS tela_core)
 include(GNUInstallDirs)
 target_include_directories(tela_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -44,6 +45,10 @@ add_library(tela_source_view src/application/source_view.cpp src/application/sou
 add_library(Tela::SourceView ALIAS tela_source_view)
 target_link_libraries(tela_source_view PUBLIC Tela::Core)
 set_target_properties(tela_source_view PROPERTIES EXPORT_NAME SourceView)
+add_library(tela_list_view src/application/list_view_file.cpp src/application/list_view_document.cpp)
+add_library(Tela::ListView ALIAS tela_list_view)
+target_link_libraries(tela_list_view PUBLIC Tela::Core)
+set_target_properties(tela_list_view PROPERTIES EXPORT_NAME ListView)
 option(TELA_BUILD_WINDOWS "Build the explicit Pictor CPU/Windows composition adapter" OFF)
 option(TELA_BUILD_MACOS "Build the explicit Pictor CPU/AppKit composition adapter" OFF)
 option(TELA_BUILD_PICTOR "Build the portable Pictor CPU surface adapter" OFF)
@@ -123,6 +128,11 @@ if(TELA_BUILD_WINDOWS)
     examples/desktop/desktop_probe_content.cpp examples/desktop/desktop_probe_options.cpp)
   target_link_libraries(tela_desktop_overlay_probe PRIVATE Tela::Windows)
   target_compile_definitions(tela_desktop_overlay_probe PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
+  add_executable(tela_list_overlay examples/windows/list_overlay_host.cpp
+    examples/desktop/list_file_source.cpp examples/desktop/list_overlay_options.cpp)
+  target_link_libraries(tela_list_overlay PRIVATE Tela::Windows Tela::ListView)
+  target_compile_definitions(tela_list_overlay PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
+  install(TARGETS tela_list_overlay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   add_executable(tela_probe_target examples/windows/probe_target.cpp)
   target_link_libraries(tela_probe_target PRIVATE user32 gdi32)
   target_compile_definitions(tela_probe_target PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
@@ -193,8 +203,12 @@ if(BUILD_TESTING)
   add_executable(tela_graph_tests tests/graph_test.cpp)
   target_link_libraries(tela_graph_tests PRIVATE Tela::Graph)
   add_test(NAME tela_graph_contract COMMAND tela_graph_tests ${CMAKE_CURRENT_BINARY_DIR}/graph-test.tela)
+  add_executable(tela_list_view_tests tests/list_view_test.cpp
+    examples/desktop/list_file_source.cpp examples/desktop/list_overlay_options.cpp)
+  target_link_libraries(tela_list_view_tests PRIVATE Tela::ListView)
+  add_test(NAME tela_list_view_contract COMMAND tela_list_view_tests ${CMAKE_CURRENT_BINARY_DIR}/list-view-test.telalist)
 endif()
-install(TARGETS tela_core tela_transitions tela_scene_overlay tela_spec_view tela_graph tela_source_view tela_raster EXPORT TelaTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS tela_core tela_transitions tela_scene_overlay tela_spec_view tela_graph tela_source_view tela_list_view tela_raster EXPORT TelaTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY include/tela DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT TelaTargets NAMESPACE Tela:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Tela)
 include(CMakePackageConfigHelpers)

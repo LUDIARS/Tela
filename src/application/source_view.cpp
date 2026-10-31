@@ -1,26 +1,15 @@
 // @spec Dedicated source viewer
 #include <tela/source_view.hpp>
+#include <tela/utf8.hpp>
 #include <algorithm>
 #include <stdexcept>
 
 namespace tela {
 namespace {
-// Validate canonical UTF-8 including overlong sequences, surrogates and the Unicode limit.
-std::size_t utf8_character_bytes(std::string_view text, std::size_t at) {
-    const auto lead = static_cast<unsigned char>(text[at]);
-    if(lead < 0x80) return 1;
-    const std::size_t count = lead >= 0xc2 && lead <= 0xdf ? 2 :
-        lead >= 0xe0 && lead <= 0xef ? 3 : lead >= 0xf0 && lead <= 0xf4 ? 4 : 0;
-    if(!count || at + count > text.size()) throw std::invalid_argument("Source must be valid UTF-8");
-    unsigned code = lead & (0x7f >> count);
-    for(std::size_t i = 1; i < count; ++i) {
-        const auto next = static_cast<unsigned char>(text[at + i]);
-        if((next & 0xc0) != 0x80) throw std::invalid_argument("Source must be valid UTF-8");
-        code = (code << 6) | (next & 0x3f);
-    }
-    if((count == 2 && code < 0x80) || (count == 3 && code < 0x800) ||
-       (count == 4 && code < 0x10000) || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff))
-        throw std::invalid_argument("Source must be valid UTF-8");
+// Canonical UTF-8 including overlong sequences, surrogates and the Unicode limit (tela/utf8.hpp).
+std::size_t checked_character_bytes(std::string_view text, std::size_t at) {
+    const auto count = tela::utf8_character_bytes(text, at);
+    if(!count) throw std::invalid_argument("Source must be valid UTF-8");
     return count;
 }
 }
@@ -50,7 +39,7 @@ SourceView::SourceView(std::string name, std::string_view text, std::size_t targ
             if(ch == '\r' && at + 1 < text.size() && text[at + 1] == '\n') ++at;
             ++at; finish(); continue;
         }
-        const auto length = utf8_character_bytes(text, at);
+        const auto length = checked_character_bytes(text, at);
         line_bytes += length;
         if(line_bytes > 65536) throw std::invalid_argument("Source line exceeds 65536 bytes");
         if(ch == '\t') {
@@ -72,10 +61,10 @@ std::string SourceView::slice(std::size_t line, std::size_t columns) const {
     if(!line || line > lines_.size()) throw std::out_of_range("Source line does not exist");
     const auto& text = lines_[line - 1];
     std::size_t at = 0, skipped = 0;
-    while(at < text.size() && skipped < column_) { at += utf8_character_bytes(text, at); ++skipped; }
+    while(at < text.size() && skipped < column_) { at += checked_character_bytes(text, at); ++skipped; }
     const auto begin = at;
     for(std::size_t count = 0; at < text.size() && count < std::min<std::size_t>(columns, 2048); ++count)
-        at += utf8_character_bytes(text, at);
+        at += checked_character_bytes(text, at);
     return text.substr(begin, at - begin);
 }
 

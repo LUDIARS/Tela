@@ -253,6 +253,38 @@ Windows and `NSWindowSharingNone` on macOS. When Windows cannot exclude a window
 2004) the window is destroyed and `std::runtime_error` is thrown to the caller; the surface never
 falls back to `WDA_MONITOR`, which would show a black box in the capture instead of nothing.
 
+## List view [id: SPEC-TL-LIST-VIEW]
+
+Another program writes a list as `TELA_LIST_VIEW 1`: UTF-8 without a BOM, LF lines, the first line
+exactly `TELA_LIST_VIEW 1`, then one `title\t<text>`, one `status\t<text>` and 0..256
+`row\t<mark>\t<column>...` records with 1..8 columns. Fields are separated by a single tab; the
+mark is `normal`, `alert` or `muted`. Values are at most 4096 bytes of canonical UTF-8 without
+control characters (CR included), so a writer replaces tabs and line breaks before writing. Blank
+lines are skipped and a final LF ends the last line. A missing or repeated title or status, an
+unknown record or mark, a row without a column or above 8 columns, more than 256 rows, a file
+above 4 MiB and any invalid value reject the whole file; no partial list is used. Tela only reads
+the file and does not know what the rows mean; the writer remains the source of truth.
+
+`list_view_document` declares, for a logical frame width and a number of visible rows, a
+translucent rounded backdrop (the declaration's own colour), the title, the status line and up to
+that many rows, each on one line with its columns joined by three spaces. An alert row draws a red
+band behind it and starts with `! `; a muted row starts with `? `, so the marks read without colour.
+A row's text is cut at 8192 bytes on a character boundary to stay inside the declaration's label
+limit. Rows beyond the frame are not declared and a final `+N more` line counts them. The frame's
+height is the header, the visible rows and one row for that line, at the theme's line height. The
+grip element named by the frame is the only exclusive element; everything else passes input through.
+
+`tela_list_overlay --font <ttf> --file <list>` floats the list on a desktop overlay
+(SPEC-TL-DESKTOP-OVERLAY) and follows the file: at most once a second it compares the file's write
+time and size, and reads it again only when they changed. A missing file shows
+`Waiting for the list file`; a file that cannot be used shows `List file is not usable: <reason>`
+with no rows. The previous rows are never left on screen as if they were current. Reasons that are
+not UTF-8 (local code page messages) are replaced by a fixed text. Options: `--corner`
+(default top-right), `--width 240..2000` (default 520), `--rows 1..64` (default 12),
+`--font-size 8..96`, `--seconds 1..86400` (default: until the process is stopped) and
+`--exclude-from-capture`. A run without a font or a file fails instead of showing an empty list.
+The placement reported after a drag is printed, not stored.
+
 ## Graph view [id: SPEC-TL-GRAPH]
 
 Pf exports its domain relation diagram as `TELA_GRAPH 1`: LF lines, no BOM, then

@@ -16,6 +16,7 @@ Iter can reuse the same C++ contracts without depending on Unity.
 | `Tela::SceneOverlay` | Read-only Pf scene overlay file, frame fitting and per-scene show/hide declarations |
 | `Tela::SpecView` | Read-only Pf spec view file, view fitting and per-group show/hide declarations |
 | `Tela::Graph` | Read-only Pf relation graph file, fitting and per-classification show/hide declarations |
+| `Tela::ListView` | Read-only marked list file (`TELA_LIST_VIEW 1`) and its desktop declaration (backdrop, title, status, rows, grip) |
 
 `unity/com.ludiars.tela` is an Editor-only UPM package. It sends Scene geometry,
 anchors, selection and observed input; native Tela renders the UI. The example
@@ -34,6 +35,9 @@ and edge routes come from Pf and are never re-curved ([graph view](spec/feature/
 never activated, click-through except over exclusive regions, placed in a corner of the primary
 monitor's work area or at an absolute spot, following each monitor's DPI and movable by a grip
 ([desktop overlay](spec/feature/desktop-overlay.md)); `tela_desktop_overlay_probe --font <ttf>` shows it.
+`tela_list_overlay --font <ttf> --file <list>` floats a marked list another program writes as `TELA_LIST_VIEW 1`
+on that surface and redraws it when the file is replaced; alert rows get a red band
+([list view](spec/feature/list-view.md)). Excubitor's network watch writes one for its outbound destinations.
 `tela::MacOSDesktopOverlay` is the same surface on macOS, placed in points on the primary display's
 visible frame and drawn at each display's backing scale (`tela_macos_desktop_overlay_probe`).
 `exclude_from_capture` keeps either one out of screen capture, so a presenter's overlay stays off the stream.
