@@ -9,6 +9,9 @@
 
 namespace tela {
 struct ElementState { bool pressed{}; std::uint64_t activations{}; };
+// Editing keys a host forwards to the focused field. Typed characters go
+// through Runtime::text instead (including an input method's committed text).
+enum class EditKey { backspace, enter, escape, tab, back_tab };
 // Single UI-thread owner; adapters enqueue cross-thread messages before calling.
 class Runtime {
 public:
@@ -28,8 +31,22 @@ public:
     bool pointer(const HostPointerEvent&, InputSource);
     void cancel();
     bool captured() const { return ownership_.active().has_value(); }
+    // Field focus. Empty when no field has it.
+    const std::string& focused() const noexcept { return focused_; }
+    void focus(const std::string& id);
+    void blur();
+    // Appends committed text to the focused field. Control characters are
+    // dropped. False when no field is focused (the host may use the input).
+    bool text(const std::string& utf8);
+    // Backspace removes the last character, Enter keeps the text and leaves
+    // the field, Escape restores the text from when the field was focused,
+    // Tab / Shift+Tab move to the next / previous field. False when no field
+    // is focused (Escape may then close the host window).
+    bool key(EditKey key);
 private:
     const PlacedElement* target(float x, float y) const;
+    const PlacedElement* placed(const std::string& id) const;
+    void edit_focused(const std::string& value);
     void layout();
     Document document_;
     Theme theme_;
@@ -39,5 +56,7 @@ private:
     GestureOwnership ownership_;
     std::uint64_t frames_{};
     bool dirty_{true};
+    std::string focused_;
+    std::string focus_original_;  // restored by Escape
 };
 }

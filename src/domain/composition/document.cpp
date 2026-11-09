@@ -55,6 +55,13 @@ void Document::canvas(const std::string& id, Drawing drawing, Layout layout, Inp
     append(id,ElementKind::canvas,{},input,layout);
     elements_.back().drawing=std::move(drawing);
 }
+void Document::field(const std::string& id, const std::string& value,
+                     std::function<void(const std::string&)> on_edit, Layout layout, InputPolicy input) {
+    if (!on_edit) throw std::invalid_argument("Tela field requires an edit callback");
+    if (layout.lines != 1) throw std::invalid_argument("Tela field is one line");
+    append(id, ElementKind::field, value, input, layout);
+    elements_.back().edit = std::move(on_edit);
+}
 void Document::button(const std::string& id, const std::string& label,
                       std::function<void()> action, Layout layout, InputPolicy input) {
     append(id, ElementKind::button, label, input, layout, std::move(action));

@@ -9,7 +9,7 @@
 
 namespace tela {
 enum class InputPolicy { passthrough, exclusive, shared };
-enum class ElementKind { panel, text, button, canvas };
+enum class ElementKind { panel, text, button, canvas, field };
 struct Element {
     std::string id;
     std::string parent;
@@ -19,6 +19,9 @@ struct Element {
     Layout layout;
     std::function<void()> action;
     Drawing drawing;
+    // Fields only: called with the whole new text after every edit. The
+    // application keeps the value and declares it again (`label` shows it).
+    std::function<void(const std::string&)> edit;
 };
 
 // GPU-independent declaration builder; stable IDs belong to the application.
@@ -34,6 +37,12 @@ public:
     // Draw-only by default, so callout lines never steal host input.
     void canvas(const std::string& id, Drawing drawing, Layout layout,
                 InputPolicy input = InputPolicy::passthrough);
+    // One-line text input. `value` is what it shows; typing calls `on_edit`
+    // with the whole new text and the application declares the field again.
+    // A click focuses it; see Runtime::text / Runtime::key.
+    void field(const std::string& id, const std::string& value,
+               std::function<void(const std::string&)> on_edit, Layout layout = {},
+               InputPolicy input = InputPolicy::exclusive);
 private:
     void append(const std::string& id, ElementKind kind,
                 const std::string& label, InputPolicy input, Layout layout,

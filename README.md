@@ -8,7 +8,7 @@ Iter can reuse the same C++ contracts without depending on Unity.
 
 | Target | Responsibility |
 |---|---|
-| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, theme, invalidation, gesture and bridge contracts, viewport placement beside the host window, desktop placement by monitor corner or absolute spot (physical pixels, or points with a per-display backing scale) |
+| `Tela::Core` | Stable-ID declarations, column/explicit-width row layout, clipped hit regions, retained button state, one-line text fields with focus and editing keys ([field](spec/contracts.md)), theme, invalidation, gesture and bridge contracts, viewport placement beside the host window, desktop placement by monitor corner or absolute spot (physical pixels, or points with a per-display backing scale) |
 | `Tela::Pictor` | Explicit CPU TrueType/premultiplied bitmap renderer using existing Pictor |
 | `Tela::Windows` | Transparent/nonactivating overlay, exclusive region windows, current-user local pipe, a normal top-level window that draws a declaration itself, and a translucent surface floating on the desktop without a target window, optionally excluded from screen capture |
 | `Tela::MacOS` | Nonactivating AppKit panels: an overlay following a target window, and a translucent surface floating on every Space without a target window, optionally excluded from screen capture |

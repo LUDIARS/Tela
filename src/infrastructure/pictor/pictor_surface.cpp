@@ -48,6 +48,19 @@ PixelSurface PictorSurface::render(const Runtime& runtime) {
             auto state = runtime.state(e.id);
             rectangle(out,clip,state && state->pressed ? theme.pressed : theme.button);
         }
+        const bool focused_field = e.kind == ElementKind::field && runtime.focused() == e.id;
+        if (e.kind == ElementKind::field) rectangle(out,clip,focused_field ? theme.field_focused : theme.field);
+        if (focused_field) {
+            // Caret after the last character (the field always edits at its end).
+            pictor::TextStyle measure;
+            measure.font_size = theme.font_size*e.layout.text_scale*view.dpi_scale;
+            const float advance = e.label.empty() ? 0.f : impl_->text.measure_text(impl_->font,e.label,measure).width;
+            const auto box = pixels(placed.bounds,view.dpi_scale);
+            const float padding = e.layout.padding*view.dpi_scale;
+            const float caret_x = std::min(box.x+padding+advance+1, box.x+box.width-padding-2);
+            rectangle(out,intersect({caret_x,box.y+padding,std::max(1.f,view.dpi_scale*1.5f),
+                                     box.height-2*padding},clip),theme.caret);
+        }
         if (e.label.empty()) continue;
         const float padding = e.layout.padding*view.dpi_scale;
         const auto bounds = pixels(placed.bounds,view.dpi_scale);

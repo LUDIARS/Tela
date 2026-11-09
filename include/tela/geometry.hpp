@@ -41,6 +41,7 @@ Color tint(Color accent);
 struct Theme {
     Color panel{25,30,42,220}, text{245,246,250,255};
     Color button{52,79,120,245}, pressed{90,136,194,255};
+    Color field{12,15,22,235}, field_focused{36,46,66,255}, caret{245,246,250,255};
     float font_size{16}, line_height{24};
     bool operator==(const Theme&) const = default;
 };

@@ -21,6 +21,30 @@ Panel bounds clip both paint and input. Themes and geometry invalidate layout;
 identical declarations may update callbacks without submitting another frame.
 Logical layout pixels are converted to physical pixels once by the host adapter.
 
+## Field [id: SPEC-TL-FIELD]
+
+A field is a one-line text input declared with `Document::field(id, value, on_edit)`.
+The application owns the text: every edit calls `on_edit` with the whole new
+value, and the application declares the field again with it. Fields default to
+exclusive input; a primary click on one (the same down/up ownership as a button)
+focuses it, and pressing anywhere else ends editing. Focus is kept by stable ID
+across redeclaration and is dropped when the ID disappears or stops being a field.
+
+`Runtime::text(utf8)` appends committed text to the focused field. It is the path
+for typed characters and for an input method's committed string; composition is
+left to the input method. Invalid UTF-8 and control characters are dropped, and a
+field holds at most 16384 bytes. `Runtime::key` handles Backspace (remove the last
+whole character), Enter (keep the text, leave the field), Escape (restore the text
+from when the field was focused, leave it) and Tab / Shift+Tab (next / previous field
+in layout order, wrapping). Both return false when no field is focused, so a host
+may use the key itself: the view host closes on Escape only then. Editing happens
+at the end of the text; there is no caret movement, selection or clipboard.
+
+The Pictor surface paints a field with `Theme::field` (focused: `field_focused`)
+and a caret after the last character. The Windows view host forwards `WM_CHAR`
+(UTF-16, surrogate pairs joined) and the editing keys. The macOS hosts do not
+forward keys yet.
+
 ## Input ownership [id: SPEC-TL-INPUT]
 
 Passthrough and shared regions never take physical input through native hit
