@@ -79,7 +79,12 @@ GpuRenderer::GpuRenderer(const GpuTarget& target, const std::string& font, const
     : impl_(std::make_unique<Impl>(target, font, options)) {}
 GpuRenderer::~GpuRenderer() = default;
 bool GpuRenderer::prepare(const Runtime& runtime) {
+    return prepare(runtime, GpuQuad{});
+}
+bool GpuRenderer::prepare(const Runtime& runtime, const GpuQuad& overlay) {
     auto next = plan_gpu_frame(runtime, {impl_->layer_count});
+    if (overlay.color.a && overlay.rect.width > 0 && overlay.rect.height > 0)
+        next.steps.emplace_back(overlay);
     const bool changed = !(next == impl_->frame);
     if (next.width > 0 && next.height > 0) {
         impl_->fit(next.width, next.height);

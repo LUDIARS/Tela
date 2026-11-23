@@ -67,6 +67,20 @@ struct GpuFrameOptions {
     // drawn into that layer instead, so the order stays exact with any count of at least one.
     std::size_t max_layers{3};
 };
+// A local reveal over the new content. The host owns the frame clock and hit testing stays live.
+class GpuReveal {
+public:
+    void begin(bool reduced_motion) { remaining_ = reduced_motion ? 0.f : duration; }
+    void advance(float seconds) { remaining_ = std::max(0.f, remaining_ - std::max(0.f, seconds)); }
+    bool active() const { return remaining_ > 0.f; }
+    unsigned char alpha() const {
+        const float t = remaining_ / duration;
+        return static_cast<unsigned char>(96.f * t * t);
+    }
+private:
+    static constexpr float duration = 0.12f;
+    float remaining_{};
+};
 // Physical scissor of a logical clip: the pixels the CPU raster's clip test admits.
 Rect gpu_clip(Rect logical, float dpi_scale);
 GpuFrame plan_gpu_frame(const Runtime&, const GpuFrameOptions& = {});

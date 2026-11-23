@@ -1,5 +1,9 @@
 # GPU rendering
 
+UX-TL-W2/W4。ホストが詳細領域の切り替えを知らせ、GpuReveal が残り時間を所有する。
+120 ms の間だけ指定した物理ピクセル領域に背景色を薄く重ねる。操作とヒット領域は常に最新の状態を使う。
+連続操作では最新の遷移に置き換え、動きを減らす指定では即時に終端へ進む。完了後の追加フレームは不要。
+
 SPEC-TL-GPU。Tela の配置結果を Pictor の Vulkan GPU 描画で描く (`Tela::Gpu`)。
 [計画書](../plan/2026-11-23-web-renderer-and-studio.md) の GPU 描画の段。Actio: `actio:255cd33d-cf29-4291-b752-deb3ff255533`。
 規則の正本は [contracts](../contracts.md) の SPEC-TL-GPU。

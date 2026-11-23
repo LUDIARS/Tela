@@ -200,6 +200,17 @@ void texels_are_straight_rgba() {
 
 int main() {
     try {
+        tela::GpuReveal reveal;
+        reveal.begin(false);
+        require(reveal.alpha() == 96, "new detail is visible immediately");
+        reveal.advance(0.06f);
+        require(reveal.alpha() == 24, "overlay eases out halfway through");
+        reveal.begin(false);
+        require(reveal.alpha() == 96, "repeat selection restarts the reveal");
+        reveal.advance(1.f);
+        require(!reveal.active() && reveal.alpha() == 0, "no redraw after completion");
+        reveal.begin(true);
+        require(!reveal.active(), "reduced motion presents the destination directly");
         panel_and_button_are_quads_in_physical_pixels();
         clip_matches_the_cpu_pixel_test();
         label_is_placed_inside_padding_as_the_cpu_raster_does();

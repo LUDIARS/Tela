@@ -36,6 +36,7 @@ public:
     // Outside any render pass: plans the frame and uploads the layers that changed. Returns
     // whether the plan differs from the previous one. Does not mark the runtime presented.
     bool prepare(const Runtime&);
+    bool prepare(const Runtime&, const GpuQuad& overlay);
     // Inside the host's render pass: records the prepared frame.
     void record(VkCommandBuffer, VkExtent2D);
     // Advances of the loaded font, for Runtime::text_measure. Valid while this renderer lives.
