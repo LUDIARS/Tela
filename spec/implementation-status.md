@@ -51,3 +51,22 @@ The orphan advisory counts C++ qualified methods despite file-level spec links;
 September integration targets develop by neco instruction and is registered as
 Project-September/September in Revisor (local PR 1513). Runtime acceptance remains
 blocked on reviewed deployment to the project body.
+
+## Studio controls and web rendering (2026-11-23)
+
+Stages 1 and 2 of [the web renderer plan](plan/2026-11-23-web-renderer-and-studio.md)
+(Actio `actio:3065429c-591a-4016-b247-38ff0f5231cf`):
+
+- [Input controls](feature/input-controls.md) (SPEC-TL-CONTROLS): text field (secret), text area,
+  slider, list item, separator, status, scroll, key/text events, runtime focus and wheel scrolling;
+  a backend-neutral look (`control_visual`) drawn by the CPU raster; Windows view keys, IME
+  committed text and wheel.
+- [Web rendering](feature/web-rendering.md) (SPEC-TL-WEB): `Tela::Web` `WebSession` (bounded
+  input JSON, changed-only frame JSON, secrets as bullets, images once), `web/tela.js`,
+  video element, `tela_web_stdio` check host.
+
+Verification: MSVC Release build of every target with `TELA_BUILD_WINDOWS=ON` and Pictor had
+no warnings or errors. CTest was not run in the implementing session (permission to execute
+was not granted there); new contract tests are `tela_controls_contract`,
+`tela_text_edit_contract` and `tela_web_contract`. Native window input, browser drawing, IME
+and MediaStream overlay have not been exercised. GPU drawing is a later stage.

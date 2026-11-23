@@ -1,0 +1,7 @@
+{
+  "name":"web-rendering",
+  "description":"Runtime の配置結果を上限付きのフレーム JSON にしてブラウザへ渡し、ブラウザの入力 JSON を Runtime に渡す (通信路は持たない)。web/tela.js が canvas 2D に描き、伏せ字の中身は外へ出さない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(include/tela/web_session\\.hpp|src/application/web_session\\.cpp|src/infrastructure/web/(json_writer|json_reader|input_decoder|image_registry|frame_encoder)\\.(hpp|cpp)|web/tela\\.js|examples/web/web_stdio_host\\.cpp|tests/web_session_test\\.cpp)$"}],
+  "specRefs":["spec/feature/web-rendering.md","spec/contracts.md"]
+}

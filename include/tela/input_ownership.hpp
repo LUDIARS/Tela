@@ -9,7 +9,8 @@ namespace tela {
 enum class InputSource { native, host_observation };
 struct InputTarget { std::string id; InputPolicy policy{InputPolicy::passthrough}; bool actionable{}; };
 struct Gesture { std::string id; InputSource source; std::uint64_t token; PointerButton button; };
-struct InputDecision { std::string pressed, released, activated; bool consumed{}; };
+// accepted: the event was current (sequence, revision) and the view could take input.
+struct InputDecision { std::string pressed, released, activated; bool consumed{}, accepted{}; };
 // Domain aggregate: one physical gesture has one owner until release/cancel.
 // It does not know windows, callbacks, draw commands or mutable widget state.
 class GestureOwnership {

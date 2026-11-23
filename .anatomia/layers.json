@@ -5,6 +5,7 @@
     {"glob":"src/application/**","layer":"application"},
     {"glob":"src/infrastructure/**","layer":"infrastructure"},
     {"glob":"unity/**","layer":"infrastructure"},
+    {"glob":"web/**","layer":"infrastructure"},
     {"glob":"examples/**","layer":"presentation"},
     {"glob":"tests/**","layer":"verification"},
     {"glob":"scripts/**","layer":"verification"}

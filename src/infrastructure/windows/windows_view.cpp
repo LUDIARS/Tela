@@ -2,6 +2,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include "native_keyboard.hpp"
 #include "native_pointer.hpp"
 #include <tela/windows_view.hpp>
 #include <windows.h>
@@ -30,9 +31,12 @@ struct WindowsView::Impl {
     WINDOWPLACEMENT restore{sizeof(WINDOWPLACEMENT)};
     LONG_PTR restore_style{};
     windows::NativePointer pointer;
+    windows::NativeKeyboard keyboard;
 
     Impl(Runtime& r, PictorSurface& p, const std::string& title, int width, int height, bool start_fullscreen)
         : runtime(r), renderer(p) {
+        // Clicks place the caret with the same advances the surface draws.
+        runtime.text_measure(renderer.measure());
         WNDCLASSEXW description{sizeof(description)};
         description.lpfnWndProc = procedure;
         description.hInstance = GetModuleHandleW(nullptr);
@@ -76,10 +80,14 @@ struct WindowsView::Impl {
         case WM_CAPTURECHANGED:
         case WM_CANCELMODE: runtime.cancel(); return 0;
         case WM_KEYDOWN:
+            // A focused control gets the key first; Escape closes only when nothing used it.
+            if(keyboard.key(runtime, wp)) return 0;
             if(wp == VK_ESCAPE) { DestroyWindow(w); return 0; }
             if(wp == VK_F11) { set_fullscreen(!borderless); return 0; }
             return 0;
         case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_MOUSEMOVE: pointer.forward(runtime, w, m, lp); return 0;
+        case WM_CHAR: keyboard.character(runtime, wp); return 0;
+        case WM_MOUSEWHEEL: case WM_MOUSEHWHEEL: pointer.wheel(runtime, m, wp, lp, windows::current_modifiers()); return 0;
         default: return DefWindowProcW(w, m, wp, lp);
         }
     }

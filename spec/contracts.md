@@ -314,3 +314,68 @@ declaration inputs are not redeclared, and a hidden host declares nothing.
 
 `tint(accent)` is the shared blend of Pf's dark canvas with an accent colour, used
 wherever Tela draws Pf content without a canvas of its own.
+
+## Controls [id: SPEC-TL-CONTROLS]
+
+Declarations add `text_field` (single line, optional secret and placeholder), `text_area`
+(rows = `layout.lines`, lines break only at `\n`), `slider` (fraction clamped to [0,1]),
+`list_item` (label, right-aligned detail, selected mark, action), `separator`, `status`
+(neutral / good / warning / bad mark) and `scroll` (clips its children and offsets them
+vertically; zero height fills the parent's remaining height). Inputs and scrolls default to
+exclusive; separators and statuses are passthrough. Values are UTF-8 of at most 16384 bytes;
+a text field value has no newline; a non-finite slider fraction is rejected.
+
+Values belong to the application: edits call `on_change(value)`, Enter in a text field calls
+`on_submit`, the slider calls `on_set(fraction)`, and the runtime never writes a value itself.
+An application redeclares from inside the callback (or before the next input); otherwise the
+next edit starts again from the declared value. The runtime keeps only caret, anchor and
+scroll offset by element ID, clamps them to the redeclared value / content, and keeps them
+across redeclarations. Focus is one control ID held by the runtime: a primary press on a text
+field, text area or slider focuses it, a press anywhere else blurs, Tab / Shift+Tab walk the
+focusable controls in placed order, Escape blurs, and a control removed by redeclaration loses
+focus. Focusing a control inside a scroll scrolls it into view. Disconnect drops focus.
+
+`HostKeyEvent` carries a key, pressed and modifier bits; `HostTextEvent` carries committed
+text only (typed characters or an IME's confirmed string). Key and text events share one
+increasing sequence; a stale sequence, a hidden or unfocused viewport, more than 4096 bytes or
+invalid UTF-8 is ignored. Committed text loses control characters (a text area keeps line
+breaks as `\n`). An insertion is cut at a character boundary so the value stays within 16384
+bytes. A pointer `wheel` scrolls the innermost scroll under the pointer by three line heights
+per notch (positive `wheel_y` moves toward the start), passing to an outer scroll at a limit.
+A slider follows its gesture owner's drag even off the track.
+
+What a control shows is decided from the placed result alone (`control_visual`: rectangles,
+ellipses and unwrapped text lines in logical pixels and painting order); a backend only draws
+those items. Fields follow `field_view`: no soft wrap, a horizontal shift that keeps the
+caret visible and a first row that keeps the caret's line visible. Secret fields show one
+`•` per character and never expose their bytes to drawing. Hosts set
+`Runtime::text_measure` to their font's advances so a click lands the caret where it is drawn.
+
+## Web rendering [id: SPEC-TL-WEB]
+
+`Tela::Web` serves one Runtime to one browser page through `WebSession`, which owns no
+transport: the embedder carries strings and decides who may connect. Input messages are JSON
+objects of at most 16384 bytes (depth 4, 64 values, strings at most 4096 bytes, no duplicate
+keys, strict UTF-8): `pointer` (phase move/down/up/cancel/wheel, button, CSS-pixel x/y within
+±65536, wheel within ±100 notches, modifier bits 0..15), `key` (DOM key names Tab, Enter,
+Escape, Backspace, Delete, arrows, Home, End, PageUp, PageDown, and `a`), `text`, `resize`
+(CSS width/height 0..16384, device ratio 0.25..8) and `focus`. Malformed, over-limit or
+pre-resize input is refused with a reason and reaches nothing. Sequences and gesture IDs are
+assigned by the session.
+
+`poll` returns image messages the page has not seen (`image`, straight RGBA base64, sent
+once per image object, none above 1 MiB of pixels) and then a `frame` message only when the
+encoded result differs from the last one sent. A frame carries `version` 1, an increasing
+`revision`, CSS size and device ratio, the theme, the focused ID and the placed elements in
+painting order with kind, bounds, clip, padding, rows, text scale, input policy, label,
+pressed state and kind data (field value, caret and anchor as code point indices, slider
+fraction, list detail and selection, status tone, scroll offset and content height, video
+stream key, canvas shapes). Elements with an empty clip are omitted. At most 4096 elements
+and 2 MiB per frame; what does not fit is left out and `truncated` is true. Secret values
+leave as bullets only. Disconnect cancels input and forgets what was sent.
+
+`web/tela.js` (no dependencies) draws frames on a canvas 2D context with browser fonts using
+the same control rules, overlays an attached `MediaStream` on `video` elements (native hosts
+draw a frame and the label), and sends pointer, wheel, keys, committed text (IME composition
+stays in the page) and size changes. Browser fonts differ from the native font, so glyph
+positions match only in layout, not per pixel.

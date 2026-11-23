@@ -27,8 +27,9 @@ void Document::append(const std::string& id, ElementKind kind,
     }
     elements_.push_back({id, parent_, kind, label, input, layout, std::move(action)});
 }
-void Document::panel(const std::string& id, const std::function<void()>& children, Layout layout) {
-    if (!children) throw std::invalid_argument("Tela panel requires a declaration");
+void Document::container(const std::string& id, ElementKind kind, const std::function<void()>& children,
+                         Layout layout, InputPolicy input) {
+    if (!children) throw std::invalid_argument("Tela container requires a declaration");
     std::string ancestor=parent_;unsigned depth=0;
     while(!ancestor.empty()){
         if(++depth>=64)throw std::invalid_argument("Tela panel nesting exceeds 64");
@@ -37,7 +38,7 @@ void Document::panel(const std::string& id, const std::function<void()>& childre
     }
     const auto count = elements_.size();
     const auto previous = parent_;
-    append(id, ElementKind::panel, {}, InputPolicy::passthrough, layout);
+    append(id, kind, {}, input, layout);
     parent_ = id;
     try {
         children();
@@ -47,6 +48,9 @@ void Document::panel(const std::string& id, const std::function<void()>& childre
         throw;
     }
     parent_ = previous;
+}
+void Document::panel(const std::string& id, const std::function<void()>& children, Layout layout) {
+    container(id, ElementKind::panel, children, layout, InputPolicy::passthrough);
 }
 void Document::text(const std::string& id, const std::string& value, Layout layout, InputPolicy input) {
     append(id, ElementKind::text, value, input, layout);

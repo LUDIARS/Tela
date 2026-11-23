@@ -16,6 +16,7 @@ InputDecision GestureOwnership::apply(const HostPointerEvent& event,InputSource 
         return result;
     }
     if(!available)return result;
+    result.accepted=true;
     if(event.phase==PointerPhase::down){
         if(gesture_||target.id.empty()||event.button!=PointerButton::primary)return result;
         if((source==InputSource::native&&target.policy!=InputPolicy::exclusive)||

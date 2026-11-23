@@ -1,0 +1,249 @@
+{
+    "version":  1,
+    "native":  [
+                   {
+                       "file":  "examples/controls/controls_gallery.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "examples/web/web_stdio_host.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "examples/windows/controls_host.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "UNICODE",
+                                       "_UNICODE",
+                                       "NOMINMAX",
+                                       "_WIN32_WINNT=0x0A00"
+                                   ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "src/application/runtime.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/application/runtime_keyboard.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/application/runtime_pointer.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/application/web_session.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/composition/control_visual.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/composition/document.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/composition/document_controls.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/composition/field_geometry.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/composition/layout.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/input/gesture_ownership.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/domain/text/text_edit.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/pictor/control_paint.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/pictor/pictor_surface.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/pictor/pictor_text.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/web/frame_encoder.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/web/image_registry.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/web/input_decoder.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/web/json_reader.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/web/json_writer.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/windows/native_keyboard.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "UNICODE",
+                                       "_UNICODE",
+                                       "NOMINMAX",
+                                       "_WIN32_WINNT=0x0A00"
+                                   ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/windows/native_pointer.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "UNICODE",
+                                       "_UNICODE",
+                                       "NOMINMAX",
+                                       "_WIN32_WINNT=0x0A00"
+                                   ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/windows/windows_view.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "UNICODE",
+                                       "_UNICODE",
+                                       "NOMINMAX",
+                                       "_WIN32_WINNT=0x0A00"
+                                   ],
+                       "packages":  [
+                                        "pictor"
+                                    ]
+                   },
+                   {
+                       "file":  "tests/controls_test.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "tests/text_edit_test.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "tests/web_session_test.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   }
+               ],
+    "web":  [
+
+            ]
+}

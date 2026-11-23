@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(Tela VERSION 0.1.0 LANGUAGES CXX)
-add_library(tela_core src/domain/composition/document.cpp src/domain/composition/layout.cpp
+add_library(tela_core src/domain/composition/document.cpp src/domain/composition/document_controls.cpp
+  src/domain/composition/layout.cpp src/domain/composition/field_geometry.cpp src/domain/composition/control_visual.cpp src/domain/text/text_edit.cpp
+  src/application/runtime_pointer.cpp src/application/runtime_keyboard.cpp
   src/domain/composition/drawing.cpp src/domain/composition/callout.cpp
   src/application/runtime.cpp src/domain/input/input_regions.cpp src/domain/input/gesture_ownership.cpp
   src/infrastructure/bridge/bridge_codec.cpp src/application/bridge_session.cpp
@@ -49,6 +51,12 @@ add_library(tela_list_view src/application/list_view_file.cpp src/application/li
 add_library(Tela::ListView ALIAS tela_list_view)
 target_link_libraries(tela_list_view PUBLIC Tela::Core)
 set_target_properties(tela_list_view PROPERTIES EXPORT_NAME ListView)
+add_library(tela_web src/application/web_session.cpp src/infrastructure/web/json_writer.cpp
+  src/infrastructure/web/json_reader.cpp src/infrastructure/web/input_decoder.cpp
+  src/infrastructure/web/image_registry.cpp src/infrastructure/web/frame_encoder.cpp)
+add_library(Tela::Web ALIAS tela_web)
+target_link_libraries(tela_web PUBLIC Tela::Core)
+set_target_properties(tela_web PROPERTIES EXPORT_NAME Web)
 option(TELA_BUILD_WINDOWS "Build the explicit Pictor CPU/Windows composition adapter" OFF)
 option(TELA_BUILD_MACOS "Build the explicit Pictor CPU/AppKit composition adapter" OFF)
 option(TELA_BUILD_PICTOR "Build the portable Pictor CPU surface adapter" OFF)
@@ -63,7 +71,8 @@ if(TELA_BUILD_WINDOWS OR TELA_BUILD_MACOS OR TELA_BUILD_PICTOR)
   find_library(TELA_PICTOR_LIBRARY NAMES pictor REQUIRED)
   add_library(TelaPictorDependency UNKNOWN IMPORTED)
   set_target_properties(TelaPictorDependency PROPERTIES IMPORTED_LOCATION "${TELA_PICTOR_LIBRARY}")
-  add_library(tela_pictor src/infrastructure/pictor/pictor_surface.cpp)
+  add_library(tela_pictor src/infrastructure/pictor/pictor_surface.cpp
+    src/infrastructure/pictor/pictor_text.cpp src/infrastructure/pictor/control_paint.cpp)
   add_library(Tela::Pictor ALIAS tela_pictor)
   target_include_directories(tela_pictor PRIVATE ${TELA_PICTOR_INCLUDE_DIR})
   target_link_libraries(tela_pictor PUBLIC Tela::Core Tela::Raster PRIVATE TelaPictorDependency)
@@ -96,6 +105,7 @@ endif()
 if(TELA_BUILD_WINDOWS)
   add_library(tela_windows src/infrastructure/windows/layered_bitmap.cpp src/infrastructure/windows/windows_overlay.cpp
     src/infrastructure/windows/layered_composition.cpp src/infrastructure/windows/native_pointer.cpp
+    src/infrastructure/windows/native_keyboard.cpp
     src/infrastructure/windows/windows_view.cpp
     src/infrastructure/windows/desktop_monitors.cpp src/infrastructure/windows/windows_desktop_overlay.cpp
     src/infrastructure/windows/pipe_security.cpp src/infrastructure/windows/windows_pipe.cpp)
@@ -133,6 +143,10 @@ if(TELA_BUILD_WINDOWS)
   target_link_libraries(tela_list_overlay PRIVATE Tela::Windows Tela::ListView)
   target_compile_definitions(tela_list_overlay PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
   install(TARGETS tela_list_overlay RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  add_executable(tela_controls examples/windows/controls_host.cpp examples/controls/controls_gallery.cpp)
+  target_link_libraries(tela_controls PRIVATE Tela::Windows)
+  target_compile_definitions(tela_controls PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
+  install(TARGETS tela_controls RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   add_executable(tela_probe_target examples/windows/probe_target.cpp)
   target_link_libraries(tela_probe_target PRIVATE user32 gdi32)
   target_compile_definitions(tela_probe_target PRIVATE UNICODE _UNICODE NOMINMAX _WIN32_WINNT=0x0A00)
@@ -141,6 +155,8 @@ if(TELA_BUILD_WINDOWS)
 endif()
 add_executable(tela_declaration examples/declaration.cpp)
 target_link_libraries(tela_declaration PRIVATE Tela::Core)
+add_executable(tela_web_stdio examples/web/web_stdio_host.cpp examples/controls/controls_gallery.cpp)
+target_link_libraries(tela_web_stdio PRIVATE Tela::Web)
 add_executable(tela_overlay_drawing examples/overlay_drawing.cpp)
 target_link_libraries(tela_overlay_drawing PRIVATE Tela::Core)
 include(CTest)
@@ -185,6 +201,15 @@ if(BUILD_TESTING)
   add_executable(tela_core_tests tests/document_test.cpp)
   target_link_libraries(tela_core_tests PRIVATE Tela::Core)
   add_test(NAME tela_core_contract COMMAND tela_core_tests)
+  add_executable(tela_text_edit_tests tests/text_edit_test.cpp)
+  target_link_libraries(tela_text_edit_tests PRIVATE Tela::Core)
+  add_test(NAME tela_text_edit_contract COMMAND tela_text_edit_tests)
+  add_executable(tela_controls_tests tests/controls_test.cpp)
+  target_link_libraries(tela_controls_tests PRIVATE Tela::Core)
+  add_test(NAME tela_controls_contract COMMAND tela_controls_tests)
+  add_executable(tela_web_tests tests/web_session_test.cpp)
+  target_link_libraries(tela_web_tests PRIVATE Tela::Web)
+  add_test(NAME tela_web_contract COMMAND tela_web_tests)
   add_executable(tela_runtime_tests tests/runtime_test.cpp)
   target_link_libraries(tela_runtime_tests PRIVATE Tela::Core)
   add_test(NAME tela_runtime_contract COMMAND tela_runtime_tests)
@@ -208,7 +233,8 @@ if(BUILD_TESTING)
   target_link_libraries(tela_list_view_tests PRIVATE Tela::ListView)
   add_test(NAME tela_list_view_contract COMMAND tela_list_view_tests ${CMAKE_CURRENT_BINARY_DIR}/list-view-test.telalist)
 endif()
-install(TARGETS tela_core tela_transitions tela_scene_overlay tela_spec_view tela_graph tela_source_view tela_list_view tela_raster EXPORT TelaTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY web/ DESTINATION ${CMAKE_INSTALL_DATADIR}/tela/web)
+install(TARGETS tela_core tela_web tela_transitions tela_scene_overlay tela_spec_view tela_graph tela_source_view tela_list_view tela_raster EXPORT TelaTargets ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY include/tela DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT TelaTargets NAMESPACE Tela:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Tela)
 include(CMakePackageConfigHelpers)

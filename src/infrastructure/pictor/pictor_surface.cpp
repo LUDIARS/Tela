@@ -1,6 +1,7 @@
 // @spec SPEC-TL-OVERLAY
 #include <tela/pictor_surface.hpp>
 #include <tela/drawing_raster.hpp>
+#include "control_paint.hpp"
 #include "../raster/pixel_blend.hpp"
 #include <pictor/text/text_image_renderer.h>
 #include <cmath>
@@ -11,7 +12,8 @@ struct PictorSurface::Impl {
     pictor::FontLoader fonts;
     pictor::TextImageRenderer text{fonts};
     pictor::FontHandle font;
-    explicit Impl(const std::string& path) : font(fonts.load_from_file(path)) {
+    pictor_adapter::PictorText line{text, font};
+    explicit Impl(const std::string& path) : font(fonts.load_from_file(path)), line(text, font) {
         if (font == pictor::INVALID_FONT) throw std::runtime_error("Cannot load Pictor TrueType font: " + path);
         const auto* entry = fonts.get_entry(font);
         if (!entry || entry->raw_data.size()<4 || entry->raw_data[0]!=0 || entry->raw_data[1]!=1)
@@ -19,20 +21,14 @@ struct PictorSurface::Impl {
     }
 };
 namespace {
-using raster::blend;
 Rect pixels(Rect r, float scale) { return {r.x*scale,r.y*scale,r.width*scale,r.height*scale}; }
-void rectangle(PixelSurface& out, Rect rect, Color c) {
-    const int left = std::max(0,static_cast<int>(std::floor(rect.x)));
-    const int top = std::max(0,static_cast<int>(std::floor(rect.y)));
-    const int right = std::min(out.width,static_cast<int>(std::ceil(rect.x+rect.width)));
-    const int bottom = std::min(out.height,static_cast<int>(std::ceil(rect.y+rect.height)));
-    for (int y=top;y<bottom;++y) for (int x=left;x<right;++x)
-        blend(&out.pixels[(static_cast<size_t>(y)*out.width+x)*4],
-              c.b*c.a/255,c.g*c.a/255,c.r*c.a/255,c.a);
-}
 }
 PictorSurface::PictorSurface(const std::string& font) : impl_(std::make_unique<Impl>(font)) {}
 PictorSurface::~PictorSurface() = default;
+TextMeasure PictorSurface::measure() const {
+    const auto* line = &impl_->line;
+    return [line](std::string_view text, float font_size) { return line->width(text, font_size); };
+}
 PixelSurface PictorSurface::render(const Runtime& runtime) {
     const auto& view = runtime.viewport();
     PixelSurface out{view.width,view.height,std::vector<unsigned char>(static_cast<size_t>(view.width)*view.height*4)};
@@ -41,12 +37,16 @@ PixelSurface PictorSurface::render(const Runtime& runtime) {
         const auto& e = placed.element;
         Rect clip = pixels(placed.clip,view.dpi_scale);
         if (clip.width <= 0 || clip.height <= 0) continue;
+        if (is_control(e.kind)) {
+            pictor_adapter::paint_control(out, impl_->line, runtime, placed, clip);
+            continue;
+        }
         if(e.kind==ElementKind::canvas)
             paint_drawing(out,e.drawing,{placed.bounds.x,placed.bounds.y},view.dpi_scale,clip);
-        if (e.kind == ElementKind::panel) rectangle(out,clip,theme.panel);
+        if (e.kind == ElementKind::panel) pictor_adapter::fill(out,clip,clip,theme.panel);
         if (e.kind == ElementKind::button) {
             auto state = runtime.state(e.id);
-            rectangle(out,clip,state && state->pressed ? theme.pressed : theme.button);
+            pictor_adapter::fill(out,clip,clip,state && state->pressed ? theme.pressed : theme.button);
         }
         if (e.label.empty()) continue;
         const float padding = e.layout.padding*view.dpi_scale;
@@ -67,7 +67,7 @@ PixelSurface PictorSurface::render(const Runtime& runtime) {
             if (dx<0 || dy<0 || dx>=out.width || dy>=out.height || !clip.contains(static_cast<float>(dx),static_cast<float>(dy))) continue;
             const auto* source = &text.pixels[(static_cast<size_t>(y)*width+x)*4];
             // Pictor composites premultiplied RGBA; swap R/B without multiplying twice.
-            blend(&out.pixels[(static_cast<size_t>(dy)*out.width+dx)*4],source[2],source[1],source[0],source[3]);
+            raster::blend(&out.pixels[(static_cast<size_t>(dy)*out.width+dx)*4],source[2],source[1],source[0],source[3]);
         }
     }
     return out;

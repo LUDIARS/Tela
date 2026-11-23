@@ -1,0 +1,7 @@
+{
+  "name":"input-controls",
+  "description":"Studio が使う入力部品 (入力欄・伏せ字・複数行・スライダー・一覧の行・区切り・状態・スクロール・映像の枠) と、キー・確定文字・フォーカス・ホイールの入力。値はアプリが持ち、Runtime はキャレット・選択・スクロール位置だけを持つ。見た目は配置結果から決め、描画手段はそれを描くだけにする。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(include/tela/(control_visual|field_geometry|text_edit)\\.hpp|src/domain/composition/(document_controls|field_geometry|control_visual)\\.cpp|src/domain/text/text_edit\\.cpp|src/application/runtime_(pointer|keyboard)\\.cpp|src/infrastructure/pictor/(control_paint|pictor_text)\\.(hpp|cpp)|src/infrastructure/windows/native_keyboard\\.(hpp|cpp)|examples/controls/controls_gallery\\.(hpp|cpp)|examples/windows/controls_host\\.cpp|tests/(controls|text_edit)_test\\.cpp)$"}],
+  "specRefs":["spec/feature/input-controls.md","spec/contracts.md"]
+}

@@ -5,45 +5,69 @@
 #include <stdexcept>
 
 namespace tela {
+namespace {
+bool same_visual(const Element& a, const Element& b) {
+    return a.id==b.id&&a.parent==b.parent&&a.kind==b.kind&&a.label==b.label&&a.input==b.input&&
+        a.layout==b.layout&&a.drawing==b.drawing&&a.value==b.value;
+}
+bool text_kind(ElementKind kind) { return kind == ElementKind::text_field || kind == ElementKind::text_area; }
+}
 void Runtime::layout() {
     const auto scale = viewport_.dpi_scale;
-    placed_ = arrange(document_, viewport_.width/scale, viewport_.height/scale, theme_);
+    ScrollOffsets offsets;
+    for (const auto& [id, s] : states_) if (s.scroll > 0) offsets.emplace(id, s.scroll);
+    placed_ = arrange(document_, viewport_.width/scale, viewport_.height/scale, theme_, offsets);
+    // Keep the clamped offset, so content that shrank does not leave a stale position behind.
+    for (const auto& p : placed_)
+        if (p.element.kind == ElementKind::scroll) states_[p.element.id].scroll = p.scroll;
     dirty_ = true;
 }
 void Runtime::document(Document document) {
     const auto& before=document_.elements();const auto& after=document.elements();
-    const bool same=before.size()==after.size()&&std::equal(before.begin(),before.end(),after.begin(),[](const auto& a,const auto& b){
-        return a.id==b.id&&a.parent==b.parent&&a.kind==b.kind&&a.label==b.label&&a.input==b.input&&a.layout==b.layout&&a.drawing==b.drawing;
-    });
+    const bool same=before.size()==after.size()&&std::equal(before.begin(),before.end(),after.begin(),same_visual);
     if(same){
         document_=std::move(document);
         // Rebind callbacks without submitting an identical visual frame. Bind by
         // stable ID: arrange() emits placed_ in tree order, which is not required
         // to match declaration order.
-        std::unordered_map<std::string,const std::function<void()>*> actions;
-        for(const auto& e:document_.elements())actions.emplace(e.id,&e.action);
+        std::unordered_map<std::string,const Element*> latest;
+        for(const auto& e:document_.elements())latest.emplace(e.id,&e);
         for(auto& p:placed_){
-            auto it=actions.find(p.element.id);
-            p.element.action=it==actions.end()?std::function<void()>{}:*it->second;
+            auto it=latest.find(p.element.id);
+            if(it==latest.end()){p.element.action={};p.element.on_change={};p.element.on_set={};continue;}
+            p.element.action=it->second->action;
+            p.element.on_change=it->second->on_change;
+            p.element.on_set=it->second->on_set;
         }
         return;
     }
     std::unordered_map<std::string, ElementState> next;
     for (const auto& e : document.elements()) {
         auto old = states_.find(e.id);
-        next[e.id] = old == states_.end() ? ElementState{} : old->second;
+        auto state = old == states_.end() ? ElementState{} : old->second;
+        // The application may have rejected or rewritten the edit; stay inside its value.
+        if (text_kind(e.kind)) {
+            state.caret = text_edit::clamp(e.value.text, state.caret);
+            state.anchor = text_edit::clamp(e.value.text, state.anchor);
+        }
+        next[e.id] = state;
     }
-    // A removed or retyped action cannot inherit an in-flight click.
+    // A removed or retyped control cannot inherit an in-flight gesture.
     if (const auto gesture = ownership_.active()) {
+        const auto* previous = declared(gesture->id);
         bool retained = false;
         for (const auto& e : document.elements())
-            if (e.id == gesture->id && e.kind == ElementKind::button &&
+            if (e.id == gesture->id && previous && e.kind == previous->kind &&
                 ((gesture->source == InputSource::native && e.input == InputPolicy::exclusive) ||
                  (gesture->source == InputSource::host_observation && e.input == InputPolicy::shared))) retained = true;
         if (!retained) { cancel(); for (auto& [id,s] : next) s.pressed = false; }
     }
     states_ = std::move(next);
     document_ = std::move(document);
+    if (!focused_.empty()) {
+        const auto* e = declared(focused_);
+        if (!e || !focusable(*e)) focused_.clear();
+    }
     layout();
 }
 void Runtime::theme(Theme value) {
@@ -68,11 +92,27 @@ void Runtime::viewport(Viewport value) {
     if (geometry || shown) layout();
 }
 void Runtime::disconnect() {
-    cancel(); viewport_.visible = false; ownership_.reset();
-    viewport_.revision = 0;
+    cancel(); blur(); viewport_.visible = false; ownership_.reset();
+    viewport_.revision = 0; key_sequence_ = 0;
+}
+void Runtime::text_measure(TextMeasure measure) {
+    if (!measure) throw std::invalid_argument("Tela text measure is required");
+    measure_ = std::move(measure);
+    dirty_ = true;
 }
 const ElementState* Runtime::state(const std::string& id) const {
     auto it = states_.find(id); return it == states_.end() ? nullptr : &it->second;
+}
+const PlacedElement* Runtime::placed(const std::string& id) const {
+    for (const auto& p : placed_) if (p.element.id == id) return &p;
+    return nullptr;
+}
+const Element* Runtime::declared(const std::string& id) const {
+    for (const auto& e : document_.elements()) if (e.id == id) return &e;
+    return nullptr;
+}
+bool Runtime::focusable(const Element& e) noexcept {
+    return e.input != InputPolicy::passthrough && (text_kind(e.kind) || e.kind == ElementKind::slider);
 }
 const PlacedElement* Runtime::target(float x, float y) const {
     for (auto it = placed_.rbegin(); it != placed_.rend(); ++it)
@@ -86,24 +126,5 @@ void Runtime::cancel() {
     const auto id=ownership_.cancel();if(id.empty())return;
     auto it = states_.find(id); if (it != states_.end()) it->second.pressed = false;
     dirty_ = true;
-}
-bool Runtime::pointer(const HostPointerEvent& event, InputSource source) {
-    const float x = (event.desktop_x-viewport_.desktop_x)/viewport_.dpi_scale;
-    const float y = (event.desktop_y-viewport_.desktop_y)/viewport_.dpi_scale;
-    auto e = target(x,y);
-    const auto decision=ownership_.apply(event,source,viewport_.revision,viewport_.visible&&viewport_.focused,
-        e?InputTarget{e->element.id,e->element.input,e->element.kind==ElementKind::button}:InputTarget{});
-    if(!decision.pressed.empty()){states_.at(decision.pressed).pressed=true;dirty_=true;}
-    if(!decision.released.empty()){states_.at(decision.released).pressed=false;dirty_=true;}
-    // Dispatch the owner's action, not whatever sits under the release point.
-    if(!decision.activated.empty()){
-        const auto* owner=e&&e->element.id==decision.activated?e:nullptr;
-        if(!owner)for(const auto& p:placed_)if(p.element.id==decision.activated){owner=&p;break;}
-        ++states_.at(decision.activated).activations;
-        // Copy before invoking: an action may redeclare the document, which
-        // reassigns placed_ and would otherwise free the std::function mid-call.
-        if(owner&&owner->element.action){auto action=owner->element.action;action();}
-    }
-    return decision.consumed;
 }
 }

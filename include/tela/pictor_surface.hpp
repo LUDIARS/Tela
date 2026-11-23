@@ -12,6 +12,8 @@ public:
     PictorSurface(const PictorSurface&) = delete;
     PictorSurface& operator=(const PictorSurface&) = delete;
     PixelSurface render(const Runtime&);
+    // Advances of the loaded font, for Runtime::text_measure. Valid while this surface lives.
+    TextMeasure measure() const;
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;

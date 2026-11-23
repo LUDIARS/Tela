@@ -13,6 +13,11 @@ DDD vocabulary, context candidates and layer policy are in [DDD](architecture/dd
 - [Overlay drawing](feature/overlay-drawing.md): portable shape declarations and
   anchored callouts. The CPU Raster adapter consumes these with physical clipping;
   Pictor supplies text, and desktop hosts supply target coordinates and visibility.
+- [Input controls](feature/input-controls.md): text fields, sliders, list items, scrolls and
+  keyboard focus. Values stay with the application; the look comes from the placed result
+  (`control_visual`) so CPU, GPU and web backends only draw it.
+- [Web rendering](feature/web-rendering.md): `WebSession` turns the placed result into frame
+  JSON and browser input back into runtime events; `web/tela.js` draws it. No transport in Tela.
 - Pictor adapter: layout output to premultiplied bitmap composition. Existing
   Pictor UIRenderer skips text and exposes Vulkan details, so a complete adapter
   must explicitly bridge text and clip semantics; it is not a cast of enum values.

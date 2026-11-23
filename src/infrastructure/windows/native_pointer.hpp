@@ -16,6 +16,8 @@ class NativePointer {
 public:
     static bool handles(UINT message) noexcept;
     void forward(Runtime&, HWND window, UINT message, LPARAM position);
+    // WM_MOUSEWHEEL / WM_MOUSEHWHEEL; their position is already in screen coordinates.
+    void wheel(Runtime&, UINT message, WPARAM delta, LPARAM position, std::uint32_t modifiers);
 private:
     std::uint64_t sequence_{}, gesture_{};
 };
