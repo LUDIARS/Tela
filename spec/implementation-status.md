@@ -70,3 +70,20 @@ no warnings or errors. CTest was not run in the implementing session (permission
 was not granted there); new contract tests are `tela_controls_contract`,
 `tela_text_edit_contract` and `tela_web_contract`. Native window input, browser drawing, IME
 and MediaStream overlay have not been exercised. GPU drawing is a later stage.
+
+## GPU rendering (2026-11-23)
+
+The GPU stage of [the web renderer plan](plan/2026-11-23-web-renderer-and-studio.md)
+(Actio `actio:255cd33d-cf29-4291-b752-deb3ff255533`), [GPU rendering](feature/gpu-rendering.md)
+(SPEC-TL-GPU): `Tela::GpuFrame` plans the placed result as quads, scissors and CPU-rasterized
+layers in exact painting order (no GPU needed); `Tela::Gpu` `GpuRenderer` draws it through
+Pictor's Vulkan `UIRenderer` into a host-owned render pass, with Pictor TrueType text and the
+CPU shape raster in the layers, sRGB-aware colors, DPI and changed-only uploads. The check host
+`tela_gpu_controls` shows the control gallery in a GLFW + Vulkan window with mouse, wheel, keys
+and committed text.
+
+Verification: MSVC Release build of every target with `TELA_BUILD_GPU=ON`, `TELA_BUILD_WINDOWS=ON`,
+Pictor `build/avatar-live-sdk` and Vulkan SDK 1.4.341.1 had no warnings or errors;
+`tela_gpu_frame_tests` was built and run in the default configuration and passed. The full CTest
+run and the `scripts/verify.ps1` timing were not done (CTest execution was refused by the
+session's permissions). Drawing in a real window and its input have not been exercised.

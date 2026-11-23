@@ -3,6 +3,7 @@
 #include "../raster/pixel_blend.hpp"
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 #include <string>
 
 namespace tela::pictor_adapter {
@@ -17,6 +18,14 @@ pictor::TextStyle style(float font_px, Color color) {
     s.word_wrap = false;
     return s;
 }
+}
+pictor::FontHandle load_true_type(pictor::FontLoader& fonts, const std::string& path) {
+    const auto font = fonts.load_from_file(path);
+    if (font == pictor::INVALID_FONT) throw std::runtime_error("Cannot load Pictor TrueType font: " + path);
+    const auto* entry = fonts.get_entry(font);
+    if (!entry || entry->raw_data.size()<4 || entry->raw_data[0]!=0 || entry->raw_data[1]!=1)
+        throw std::runtime_error("Tela requires TrueType outlines; CFF approximation is unsupported");
+    return font;
 }
 float PictorText::width(std::string_view text, float font_px) const {
     if (text.empty()) return 0;
@@ -33,11 +42,26 @@ void PictorText::draw(PixelSurface& out, std::string_view text, float x, float y
     if (width <= 0 || height <= 0) return;
     auto image = renderer_.render_text_fixed(font_, std::string(text), static_cast<std::uint32_t>(width),
                                              static_cast<std::uint32_t>(height), style(font_px, color));
+    blit(out, image.pixels, x0, y0, width, height, clip);
+}
+void PictorText::draw_box(PixelSurface& out, std::string_view text, Rect box, float font_px, Color color, Rect clip) {
+    const int x0 = static_cast<int>(box.x), y0 = static_cast<int>(box.y);
+    const int width = static_cast<int>(box.width), height = static_cast<int>(box.height);
+    if (text.empty() || width <= 0 || height <= 0) return;
+    auto s = style(font_px, color);
+    s.max_width = static_cast<float>(width);
+    s.word_wrap = true;
+    auto image = renderer_.render_text_fixed(font_, std::string(text), static_cast<std::uint32_t>(width),
+                                             static_cast<std::uint32_t>(height), s);
+    blit(out, image.pixels, x0, y0, width, height, clip);
+}
+void PictorText::blit(PixelSurface& out, const std::vector<std::uint8_t>& pixels, int x0, int y0, int width, int height,
+                      Rect clip) {
     for (int row = 0; row < height; ++row) for (int column = 0; column < width; ++column) {
         const int dx = x0 + column, dy = y0 + row;
         if (dx < 0 || dy < 0 || dx >= out.width || dy >= out.height ||
             !clip.contains(static_cast<float>(dx), static_cast<float>(dy))) continue;
-        const auto* source = &image.pixels[(static_cast<std::size_t>(row) * width + column) * 4];
+        const auto* source = &pixels[(static_cast<std::size_t>(row) * width + column) * 4];
         // Pictor composites premultiplied RGBA; swap R/B without multiplying twice.
         raster::blend(&out.pixels[(static_cast<std::size_t>(dy) * out.width + dx) * 4],
                       source[2], source[1], source[0], source[3]);

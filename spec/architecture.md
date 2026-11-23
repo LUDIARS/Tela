@@ -18,6 +18,8 @@ DDD vocabulary, context candidates and layer policy are in [DDD](architecture/dd
   (`control_visual`) so CPU, GPU and web backends only draw it.
 - [Web rendering](feature/web-rendering.md): `WebSession` turns the placed result into frame
   JSON and browser input back into runtime events; `web/tela.js` draws it. No transport in Tela.
+- [GPU rendering](feature/gpu-rendering.md): `GpuRenderer` draws the placed result with Pictor's
+  Vulkan UIRenderer in a host-owned render pass; text and shapes it lacks go through CPU layers.
 - Pictor adapter: layout output to premultiplied bitmap composition. Existing
   Pictor UIRenderer skips text and exposes Vulkan details, so a complete adapter
   must explicitly bridge text and clip semantics; it is not a cast of enum values.

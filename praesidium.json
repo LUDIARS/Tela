@@ -2,10 +2,57 @@
     "version":  1,
     "native":  [
                    {
+                       "file":  "src/infrastructure/gpu/gpu_renderer.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
+                                    ]
+                   },
+                   {
                        "file":  "examples/controls/controls_gallery.cpp",
                        "standard":  "c++20",
                        "includes":  [
                                         "include"
+                                    ]
+                   },
+                   {
+                       "file":  "examples/gpu/glfw_input.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan",
+                                        "glfw"
+                                    ]
+                   },
+                   {
+                       "file":  "examples/gpu/gpu_controls_host.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan",
+                                        "glfw"
                                     ]
                    },
                    {
@@ -106,6 +153,96 @@
                        "standard":  "c++20",
                        "includes":  [
                                         "include"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/gpu/gpu_frame.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/gpu/gpu_layering.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/gpu/layer_raster.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/gpu/layer_texels.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/gpu/ui_commands.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
+                                    ]
+                   },
+                   {
+                       "file":  "src/infrastructure/gpu/vulkan_layers.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ],
+                       "defines":  [
+                                       "PICTOR_HAS_VULKAN",
+                                       "NOMINMAX"
+                                   ],
+                       "packages":  [
+                                        "pictor",
+                                        "vulkan"
                                     ]
                    },
                    {
@@ -223,6 +360,13 @@
                    },
                    {
                        "file":  "tests/controls_test.cpp",
+                       "standard":  "c++20",
+                       "includes":  [
+                                        "include"
+                                    ]
+                   },
+                   {
+                       "file":  "tests/gpu_frame_test.cpp",
                        "standard":  "c++20",
                        "includes":  [
                                         "include"

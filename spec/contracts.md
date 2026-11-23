@@ -379,3 +379,28 @@ the same control rules, overlays an attached `MediaStream` on `video` elements (
 draw a frame and the label), and sends pointer, wheel, keys, committed text (IME composition
 stays in the page) and size changes. Browser fonts differ from the native font, so glyph
 positions match only in layout, not per pixel.
+
+## GPU rendering [id: SPEC-TL-GPU]
+
+`Tela::Gpu` draws one Runtime's placed result with Pictor's Vulkan `UIRenderer` inside a render
+pass the host owns (`GpuTarget`: Pictor `VulkanContext`, render pass, its color format and the
+directory of Pictor's compiled `ui_widget` shaders). The host keeps the window, swapchain and
+frame loop; Tela holds no window. `plan_gpu_frame` (`Tela::GpuFrame`, no GPU or Pictor needed)
+turns the placed result into physical-pixel steps in painting order: quads (solid, optionally
+rounded, with an integer scissor) and layer draws. Panels, buttons, filled rectangles of
+`control_visual`, circle marks and plain canvas fills (no stroke, glow, gradient or opacity) are
+quads; text, other ellipses and canvas shapes are layer items. Clips admit the pixels whose
+top-left corner lies inside the scaled logical clip and fills cover every pixel they touch, as on
+the CPU raster; elements with an empty clip produce nothing.
+
+Layer items are rasterized on the CPU with the same Pictor TrueType text (one unwrapped line per
+`control_visual` text, wrapped labels inside the padding) and the same shape raster as the CPU
+surface, then uploaded as straight-alpha RGBA textures of at least the viewport size and drawn
+full size from the top-left. Painting order is exact: a quad that would cover any item already in
+the open layer first closes that layer (its draw step precedes the quad); when no layer is left
+(default 3, at most 8) the quad is rasterized into the last layer instead. Only layers whose items
+or frame size changed are rasterized and uploaded again; an upload waits for its copy. Layer
+textures grow to the viewport by recreating the UIRenderer, whose texture slots are never
+released. A `*_SRGB` target gets linearized quad colors and sRGB layer textures. Secret field
+bytes never reach the plan. `prepare` runs outside the render pass, `record` inside it; the host
+draws only when `Runtime::needs_frame()` or its swapchain requires, then calls `frame_presented()`.

@@ -86,4 +86,4 @@ session.disconnect();
 ## 未確認・残り
 
 - Studio の WS への組み込みと公開名の検査は段 3 (Ergo 側)。
-- GPU 描画 (Vulkan / Pictor の GPU で配置結果を描く) は段 1・段 2 の後の別の段 (親セッションが計画書に足す)。
+- GPU 描画 (Vulkan / Pictor の GPU で配置結果を描く) は [GPU rendering](gpu-rendering.md) (SPEC-TL-GPU) で別に作った。

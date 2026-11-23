@@ -1,0 +1,7 @@
+{
+  "name":"gpu-rendering",
+  "description":"Runtime の配置結果を GPU を使わない描画計画 (矩形・切り抜き・描く順序を保つレイヤ) にし、Pictor の Vulkan UIRenderer でホストの render pass に描く。文字と図形は CPU 版と同じラスタでレイヤに描き、窓や swapchain は持たない。",
+  "presetRules":[],"templateRules":[],
+  "membership":[{"pathPattern":"(^|/)(include/tela/(gpu_frame|gpu_renderer)\\.hpp|src/infrastructure/gpu/[^/]+\\.(hpp|cpp)|examples/gpu/[^/]+\\.(hpp|cpp)|tests/gpu_frame_test\\.cpp)$"}],
+  "specRefs":["spec/feature/gpu-rendering.md","spec/contracts.md"]
+}

@@ -60,7 +60,15 @@ Tela に無いもの: 文字入力 (キーボード・テキスト・フォー�
 - ブラウザに送るのは配置結果だけで、アプリのデータや秘密 (伏せ字欄の中身) は送らない (伏せ字は `•` に置き換えて送る)。
 - Web とネイティブで同じ宣言・同じ配置を使う (別の UI を作らない)。
 
-## 未確定 (人間に確かめる)
+### GPU 描画の段 (Tela)
 
-- 段 3 で Studio のネイティブの窓の描画を Vulkan (Pictor の GPU) から Tela の CPU raster に替えてよいか
-  (Tela の Windows の窓は CPU raster + 合成。Studio のタブはテキスト中心なので足りる見込み)。
+人間の指示 (2026-11-23, neco): 「Tela の描画を GPU に対応して」。Studio のネイティブの窓は今の Vulkan / Pictor の GPU 描画のまま
+にし、CPU raster に落とさない。下の未確定だった問いへの答えになる。
+
+- `Tela::Gpu` `GpuRenderer`: 配置結果を Pictor の UIRenderer で、ホストが持つ render pass に描く ([GPU rendering](../feature/gpu-rendering.md))。
+- 段 3 では、Studio の窓を Tela の CPU raster の窓に替えず、`ergo_render` の層から `GpuRenderer` を呼ぶ。
+
+## 決まったこと (元は未確定)
+
+- 段 3 で Studio のネイティブの窓の描画を Vulkan (Pictor の GPU) から Tela の CPU raster に替えてよいか →
+  替えない。GPU のまま描く (上の GPU 描画の段)。

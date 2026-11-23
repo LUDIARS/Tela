@@ -2,7 +2,6 @@
 #include <tela/pictor_surface.hpp>
 #include <tela/drawing_raster.hpp>
 #include "control_paint.hpp"
-#include "../raster/pixel_blend.hpp"
 #include <pictor/text/text_image_renderer.h>
 #include <cmath>
 #include <stdexcept>
@@ -13,12 +12,7 @@ struct PictorSurface::Impl {
     pictor::TextImageRenderer text{fonts};
     pictor::FontHandle font;
     pictor_adapter::PictorText line{text, font};
-    explicit Impl(const std::string& path) : font(fonts.load_from_file(path)), line(text, font) {
-        if (font == pictor::INVALID_FONT) throw std::runtime_error("Cannot load Pictor TrueType font: " + path);
-        const auto* entry = fonts.get_entry(font);
-        if (!entry || entry->raw_data.size()<4 || entry->raw_data[0]!=0 || entry->raw_data[1]!=1)
-            throw std::runtime_error("Tela requires TrueType outlines; CFF approximation is unsupported");
-    }
+    explicit Impl(const std::string& path) : font(pictor_adapter::load_true_type(fonts, path)), line(text, font) {}
 };
 namespace {
 Rect pixels(Rect r, float scale) { return {r.x*scale,r.y*scale,r.width*scale,r.height*scale}; }
@@ -56,19 +50,9 @@ PixelSurface PictorSurface::render(const Runtime& runtime) {
         const int width = std::min(view.width,std::max(0,static_cast<int>(bounds.width-2*padding)));
         const int height = std::min(view.height,std::max(0,static_cast<int>(bounds.height-2*padding)));
         if (!width || !height) continue;
-        pictor::TextStyle style;
-        style.font_size = theme.font_size*e.layout.text_scale*view.dpi_scale;
-        style.color = {theme.text.r/255.f,theme.text.g/255.f,theme.text.b/255.f,theme.text.a/255.f};
-        style.align_v = pictor::TextAlignV::TOP;
-        style.max_width = static_cast<float>(width);
-        auto text = impl_->text.render_text_fixed(impl_->font,e.label,width,height,style);
-        for (int y=0;y<height;++y) for (int x=0;x<width;++x) {
-            const int dx=x0+x, dy=y0+y;
-            if (dx<0 || dy<0 || dx>=out.width || dy>=out.height || !clip.contains(static_cast<float>(dx),static_cast<float>(dy))) continue;
-            const auto* source = &text.pixels[(static_cast<size_t>(y)*width+x)*4];
-            // Pictor composites premultiplied RGBA; swap R/B without multiplying twice.
-            raster::blend(&out.pixels[(static_cast<size_t>(dy)*out.width+dx)*4],source[2],source[1],source[0],source[3]);
-        }
+        impl_->line.draw_box(out, e.label,
+                             {static_cast<float>(x0), static_cast<float>(y0), static_cast<float>(width), static_cast<float>(height)},
+                             theme.font_size*e.layout.text_scale*view.dpi_scale, theme.text, clip);
     }
     return out;
 }

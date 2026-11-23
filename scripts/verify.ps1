@@ -8,7 +8,7 @@ $buildSearchPath = $env:PATH
 [Environment]::SetEnvironmentVariable('PATH', $null, 'Process')
 [Environment]::SetEnvironmentVariable('Path', $null, 'Process')
 [Environment]::SetEnvironmentVariable('Path', $buildSearchPath, 'Process')
-cmake -S . -B build-review -DBUILD_TESTING=ON
+cmake -S . -B build-review -DBUILD_TESTING=ON -DCMAKE_SUPPRESS_REGENERATION=ON
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 cmake --build build-review --config Release --parallel
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
